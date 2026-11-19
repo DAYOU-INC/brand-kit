@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.3.3/schemas/checks.schema.json",
+  "$schema": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.3.4/schemas/checks.schema.json",
   "$description": "brand-kit check 用的规则。contrast 生成 brand.md 第 3.2 节的对比度表；extraColors 登记故意不做成令牌的色值；names.forbidden 登记禁用的旧名。",
   "contrast": [
     { "fg": "color.neutral.white", "bg": "color.brand.primary", "usage": "text" }

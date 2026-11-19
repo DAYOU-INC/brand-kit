@@ -1,6 +1,6 @@
 # 给 AI 的说明
 
-这是一个品牌视觉标准库，用 [brand-kit](https://github.com/DAYOU-INC/brand-kit) 管理。品牌列表在 `brand-kit.json`，每个品牌一个目录。方法论和完整规则在 brand-kit 的文档里：品牌库里 `npm ci` 之后在 `node_modules/brand-kit/docs/`；没装依赖时直接看 GitHub 上对应版本的文档：`https://github.com/DAYOU-INC/brand-kit/tree/v0.3.3/docs`。
+这是一个品牌视觉标准库，用 [brand-kit](https://github.com/DAYOU-INC/brand-kit) 管理。品牌列表在 `brand-kit.json`，每个品牌一个目录。方法论和完整规则在 brand-kit 的文档里：品牌库里 `npm ci` 之后在 `node_modules/brand-kit/docs/`；没装依赖时直接看 GitHub 上对应版本的文档：`https://github.com/DAYOU-INC/brand-kit/tree/v0.3.4/docs`。
 
 ## 0. 先判断你的角色
 
@@ -45,7 +45,7 @@
 - [ ] 颜色、字体、圆角都来自 `build/<品牌>/`，令牌的渠道包含当前场景。
 - [ ] 文字和底色的组合在 `brand.md` 第 3.2 节的对比度表里，且符合表里的规则；表里没有的组合先算对比度（`npx brand-kit contrast "#前景" "#底色"`；WCAG 2.x AA：正文 ≥ 4.5，大字和图形 ≥ 3）。
 - [ ] logo 是原文件，没有变形、改色、加效果，留足安全距离。
-- [ ] 产品名称是 `brand.md` 第 1.1 节的正式名称；功能描述没有超出第 8 节指向的产品说明。
+- [ ] 产品名称是 `brand.md` 第 1.1 节的正式名称（还没定时先问人）。
 - [ ] 没有用到 `brand.md` 第 2.3、6.5 节禁止的做法。
 - [ ] 交付说明写了：规范版本（`<品牌库>@<提交号>` 或标签）、用到的「按现状执行」条目、碰到的「待处理」事项。
 
@@ -54,6 +54,7 @@
 完整步骤见 `node_modules/brand-kit/docs/维护流程.md`。最容易出错的：
 
 - 改动走分支和合并请求，不直接推 `main`；合并前要有负责人审批。
+- **只用设计提供的素材库**；代码、开发文档、产品说明都不作为依据。缺素材就列清单交给人反馈设计，不自己补。
 - 数值只改 `tokens.json`，改完 `npx brand-kit build`；`brand.md` 只写令牌全名。
 - 新令牌的 `status`、`channels`、`source`、`$description` 都必填。
 - 不改名、不删除已有令牌；要换就用 `$deprecated` 过渡，见 `node_modules/brand-kit/docs/版本与发布.md`。
