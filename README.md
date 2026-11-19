@@ -6,7 +6,7 @@
 
 - **规范正文**（`brand.md`）：人和 AI 都能读
 - **设计令牌**（`tokens.json`，DTCG 2025.10 格式）：所有数值只在这里定义
-- **生成文件**（`build/`）：网站 CSS、Flutter 常量、带说明的完整 JSON，由令牌自动生成
+- **生成文件**（`build/`）：网站 CSS、Flutter 常量、带说明的完整 JSON、给设计工具导入的 DTCG 文件，由令牌自动生成
 - **自动校验**（`brand-kit check`）：每个合并请求都检查一遍，规范写错、数值对不上、对比度不达标、生成文件过期都会报错
 
 AI 有明确的入口（`AGENTS.md`），分两种角色：维护品牌库的 AI，和在其他项目里使用规范的 AI。
@@ -26,12 +26,12 @@ AI 有明确的入口（`AGENTS.md`），分两种角色：维护品牌库的 AI
 需要 Node.js 22 或更高版本。
 
 ```bash
-npx github:DAYOU-INC/brand-kit#v0.1.0 init my-brands
+npx https://github.com/DAYOU-INC/brand-kit/archive/refs/tags/v0.2.0.tar.gz init my-brands
 cd my-brands && git init -b main && npm install
 npx brand-kit new acme       # 新增品牌，按模板填写
 npx brand-kit build          # 由 tokens.json 生成 build/，更新对比度表
 npx brand-kit check          # 校验
-npx brand-kit color #1f4e5f  # 输出 DTCG 颜色对象
+npx brand-kit color "#1f4e5f"  # 输出 DTCG 颜色对象（# 要加引号）
 ```
 
 ## 仓库结构

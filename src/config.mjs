@@ -2,7 +2,19 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** $extensions 里 brand-kit 自己的命名空间（DTCG 要求厂商扩展用反向域名）。 */
+/** brand-kit 版本（写进生成文件头）。 */
+export const KIT_VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+
+/** 令牌名的每一段：小写字母开头，只能有小写字母、数字和单个连字符。 */
+export const NAME_SEGMENT = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+
+/** 确认人不能是 AI 或推断。 */
+export const NOT_HUMAN = /(^|[^A-Za-z])AI([^A-Za-z]|$)|推断|Claude|GPT|Copilot|机器人|自动/i;
+
+/** 读 JSON / 文本：去掉 UTF-8 BOM，换行统一成 LF。 */
+export const readText = (p) => readFileSync(p, 'utf8').replace(/^﻿/, '').replace(/\r\n/g, '\n');
+
+/** $extensions 里 brand-kit 自己的命名空间（DTCG 建议厂商扩展用反向域名作键）。 */
 export const NS = 'com.github.dayou-inc.brand-kit';
 
 /** 令牌状态。 */
@@ -16,9 +28,9 @@ export const TYPES = ['color', 'dimension', 'fontFamily', 'fontWeight', 'number'
 
 /** 对比度用途和最低要求（WCAG 2.x）。forbidden-text 表示禁止用于文字，只记录、不设下限。 */
 export const CONTRAST_USAGE = {
-  text: { min: 4.5, label: '正文（任意字号）' },
-  'large-text': { min: 3, label: '大字（≥24px 常规，或 ≥18.66px 粗体）' },
-  graphic: { min: 3, label: '图形、图标、界面元素' },
+  text: { min: 4.5, label: '正文（AA，任意字号）' },
+  'large-text': { min: 3, label: '大字（AA，≥24px 常规，或 ≥18.67px 粗体）' },
+  graphic: { min: 3, label: '图形、图标、界面元素（AA）' },
   'forbidden-text': { min: null, label: '禁止用于文字' },
 };
 
@@ -39,7 +51,7 @@ export const REQUIRED_SECTIONS = [
 ];
 
 /** 正文里只允许三种状态说法，这些词会报错。 */
-export const BANNED_STATUS_WORDS = ['待确认', '待办', '待定', '待决定', '待统一', '未定'];
+export const BANNED_STATUS_WORDS = ['待确认', '待办', '待定', '待决定', '待统一', '未定', '待核实', '待补充', '待商定', '暂定', 'TBD', 'TODO'];
 
 /** 自动生成的对比度表在 brand.md 里的起止标记。 */
 export const CONTRAST_START = '<!-- brand-kit:contrast 由 brand-kit build 生成，不要手改 -->';
@@ -52,8 +64,10 @@ export function loadRepoConfig(root) {
   const p = join(root, 'brand-kit.json');
   if (!existsSync(p)) throw new Error(`${root} 下没有 brand-kit.json，不是品牌库根目录（用 brand-kit init 创建）`);
   let cfg;
-  try { cfg = JSON.parse(readFileSync(p, 'utf8')); } catch (e) { throw new Error(`brand-kit.json 不是合法 JSON：${e.message}`); }
+  try { cfg = JSON.parse(readText(p)); } catch (e) { throw new Error(`brand-kit.json 不是合法 JSON：${e.message}`); }
   if (!Array.isArray(cfg.brands)) throw new Error('brand-kit.json 缺少 brands 数组');
+  if (new Set(cfg.brands).size !== cfg.brands.length) throw new Error('brand-kit.json 的 brands 有重复');
+  for (const k of Object.keys(cfg)) if (!['$schema', 'brands'].includes(k)) throw new Error(`brand-kit.json 有不认识的字段 "${k}"`);
   for (const b of cfg.brands) {
     if (typeof b !== 'string' || !/^[a-z][a-z0-9-]*$/.test(b)) throw new Error(`brand-kit.json 里的品牌名 ${JSON.stringify(b)} 不合法：只能用小写字母、数字和连字符`);
   }

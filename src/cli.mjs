@@ -21,8 +21,12 @@ const HELP = `brand-kit：品牌视觉规范的校验和构建
 
 const args = process.argv.slice(2);
 const rootIdx = args.indexOf('--root');
+if (rootIdx >= 0 && (!args[rootIdx + 1] || args[rootIdx + 1].startsWith('--'))) {
+  console.error('错误  --root 后面要写品牌库目录');
+  process.exit(1);
+}
 const root = resolve(rootIdx >= 0 ? args[rootIdx + 1] : '.');
-const [cmd, arg] = args.filter((a, i) => a !== '--root' && i !== rootIdx + 1 || rootIdx < 0);
+const [cmd, arg] = rootIdx >= 0 ? args.filter((_, i) => i !== rootIdx && i !== rootIdx + 1) : args;
 
 async function main() {
   switch (cmd) {
@@ -47,8 +51,7 @@ async function main() {
       return 0;
     }
     case 'check': {
-      const { errors, warnings, brands } = await checkRepo(root);
-      for (const w of warnings) console.log(`提示  ${w}`);
+      const { errors, brands } = await checkRepo(root);
       for (const e of errors) console.log(`错误  ${e}`);
       if (errors.length) { console.log(`\n校验未通过：${errors.length} 个错误`); return 1; }
       console.log(`校验通过：${brands.join('、') || '（没有品牌）'}`);
@@ -56,7 +59,7 @@ async function main() {
     }
     case 'build': {
       const cfg = loadRepoConfig(root);
-      await buildRepo(root, cfg.brands);
+      buildRepo(root, cfg.brands);
       console.log(`已生成 build/：${cfg.brands.join('、')}`);
       return 0;
     }
@@ -65,9 +68,17 @@ async function main() {
       console.log(JSON.stringify(colorObject(arg)));
       return 0;
     }
-    default:
+    case undefined:
+    case 'help':
+    case '--help':
+    case '-h':
       console.log(HELP);
-      return cmd ? 1 : 0;
+      return 0;
+    default:
+      console.log(`不认识的命令：${cmd}
+
+${HELP}`);
+      return 1;
   }
 }
 

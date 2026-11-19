@@ -1,5 +1,5 @@
 {
-  "$description": "acme 设计令牌：由 brand-kit build 从 acme/tokens.json 生成，不要手改（tokens.resolved.json）",
+  "$description": "acme 设计令牌：由 brand-kit 0.2.0 从 acme/tokens.json 生成，不要手改（tokens.resolved.json）",
   "tokens": {
     "color.brand.accent": {
       "type": "color",
@@ -106,7 +106,8 @@
         "web",
         "app",
         "marketing",
-        "print"
+        "print",
+        "device"
       ],
       "status": "current",
       "description": "白色。",
@@ -114,7 +115,7 @@
     },
     "font.body": {
       "type": "fontFamily",
-      "value": "system-ui, -apple-system, 'Segoe UI', sans-serif",
+      "value": "system-ui, -apple-system, \"Segoe UI\", sans-serif",
       "channels": [
         "web"
       ],
@@ -124,19 +125,19 @@
     },
     "font.display": {
       "type": "fontFamily",
-      "value": "'Source Sans 3', sans-serif",
+      "value": "\"Source Sans 3\", sans-serif",
       "channels": [
         "web",
         "app",
         "marketing"
       ],
       "status": "current",
-      "description": "标题和正文字体（拉丁）。",
+      "description": "标题、按钮和营销物料正文（拉丁文字）。",
       "source": "示例：详情页 PSD 文字图层；Google Fonts，SIL OFL 1.1"
     },
     "font.packaging-cn": {
       "type": "fontFamily",
-      "value": "'Source Han Sans SC'",
+      "value": "\"Source Han Sans SC\"",
       "channels": [
         "print"
       ],

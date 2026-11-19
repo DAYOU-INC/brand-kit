@@ -69,15 +69,15 @@ Acme 做家用电动磨豆机，给在家做手冲和意式的人用：稳定的
 <!-- brand-kit:contrast 由 brand-kit build 生成，不要手改 -->
 | 文字 / 图形 | 底色 | 对比度 | 规则 | 说明 |
 |---|---|---|---|---|
-| `color.neutral.white` #FFFFFF | `color.brand.primary` #1F4E5F | 9.08:1 | 正文（任意字号） |  |
-| `color.brand.ink` #14181C | `color.brand.cream` #F4EDE4 | 15.36:1 | 正文（任意字号） |  |
-| `color.brand.primary` #1F4E5F | `color.brand.cream` #F4EDE4 | 7.82:1 | 正文（任意字号） |  |
-| `color.brand.ink` #14181C | `color.brand.accent-light` #F2B48A | 9.91:1 | 正文（任意字号） |  |
-| `color.neutral.white` #FFFFFF | `color.brand.accent` #C8611E | 4.05:1 | 大字（≥24px 常规，或 ≥18.66px 粗体） | 价格块、按钮大字 |
+| `color.neutral.white` #FFFFFF | `color.brand.primary` #1F4E5F | 9.08:1 | 正文（AA，任意字号） |  |
+| `color.brand.ink` #14181C | `color.brand.cream` #F4EDE4 | 15.36:1 | 正文（AA，任意字号） |  |
+| `color.brand.primary` #1F4E5F | `color.brand.cream` #F4EDE4 | 7.82:1 | 正文（AA，任意字号） |  |
+| `color.brand.ink` #14181C | `color.brand.accent-light` #F2B48A | 9.91:1 | 正文（AA，任意字号） |  |
+| `color.neutral.white` #FFFFFF | `color.brand.accent` #C8611E | 4.05:1 | 大字（AA，≥24px 常规，或 ≥18.67px 粗体） | 价格块、按钮大字 |
 | `color.neutral.white` #FFFFFF | `color.brand.accent-light` #F2B48A | 1.80:1 | 禁止用于文字 | 浅焦糖底不放白字 |
 <!-- /brand-kit:contrast -->
 
-表里没有的组合，使用前先算对比度：正文 ≥ 4.5，大字 ≥ 3。
+表里没有的组合，使用前先算对比度（WCAG 2.x AA）：正文 ≥ 4.5，大字和图形 ≥ 3。
 
 ### 3.3 不同渠道的差异
 

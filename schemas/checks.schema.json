@@ -1,33 +1,64 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/main/schemas/checks.schema.json",
+  "$id": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.2.0/schemas/checks.schema.json",
   "title": "brand-kit 品牌校验规则（checks.json）",
   "type": "object",
-  "required": ["contrast"],
+  "required": [
+    "contrast"
+  ],
   "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string" },
-    "$description": { "type": "string" },
+    "$schema": {
+      "type": "string"
+    },
+    "$description": {
+      "type": "string"
+    },
     "contrast": {
       "description": "文字或图形和底色的组合。brand-kit build 用它生成 brand.md 第 3.2 节的对比度表",
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["fg", "bg", "usage"],
+        "required": [
+          "fg",
+          "bg",
+          "usage"
+        ],
         "additionalProperties": false,
         "properties": {
-          "fg": { "type": "string", "description": "前景颜色令牌全名" },
-          "bg": { "type": "string", "description": "底色令牌全名" },
-          "usage": { "enum": ["text", "large-text", "graphic", "forbidden-text"], "description": "text ≥4.5；large-text ≥3；graphic ≥3；forbidden-text 禁止用于文字" },
-          "note": { "type": "string" }
+          "fg": {
+            "type": "string",
+            "description": "前景颜色令牌全名"
+          },
+          "bg": {
+            "type": "string",
+            "description": "底色令牌全名"
+          },
+          "usage": {
+            "enum": [
+              "text",
+              "large-text",
+              "graphic",
+              "forbidden-text"
+            ],
+            "description": "text ≥4.5；large-text ≥3；graphic ≥3；forbidden-text 禁止用于文字"
+          },
+          "note": {
+            "type": "string"
+          }
         }
       }
     },
     "extraColors": {
       "description": "brand.md 里出现、但故意不做成令牌的色值，值是原因",
       "type": "object",
-      "propertyNames": { "pattern": "^#[0-9A-Fa-f]{6}$" },
-      "additionalProperties": { "type": "string", "minLength": 1 }
+      "propertyNames": {
+        "pattern": "^#[0-9A-Fa-f]{6}$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
     },
     "names": {
       "type": "object",
@@ -38,9 +69,20 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["term", "use"],
+            "required": [
+              "term",
+              "use"
+            ],
             "additionalProperties": false,
-            "properties": { "term": { "type": "string", "minLength": 1 }, "use": { "type": "string" } }
+            "properties": {
+              "term": {
+                "type": "string",
+                "minLength": 1
+              },
+              "use": {
+                "type": "string"
+              }
+            }
           }
         }
       }

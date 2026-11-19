@@ -10,7 +10,7 @@
 
 ```bash
 npm ci                     # 安装 brand-kit
-npx brand-kit new <品牌名>  # 新增品牌
+npx brand-kit new acme     # 新增品牌（acme 换成品牌名）
 npx brand-kit build        # 由 tokens.json 生成 build/，更新对比度表
 npx brand-kit check        # 校验（CI 每次合并请求都会跑）
 ```

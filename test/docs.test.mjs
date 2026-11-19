@@ -9,7 +9,7 @@ import { anchors, blankFences, stripInline } from '../src/markdown.mjs';
 const KIT = fileURLToPath(new URL('..', import.meta.url));
 const walk = (dir, out = []) => {
   for (const d of readdirSync(join(KIT, dir), { withFileTypes: true })) {
-    if (['node_modules', '.git', 'templates'].includes(d.name)) continue;
+    if (['node_modules', '.git'].includes(d.name)) continue;
     const p = dir ? `${dir}/${d.name}` : d.name;
     if (d.isDirectory()) walk(p, out); else if (p.endsWith('.md')) out.push(p);
   }

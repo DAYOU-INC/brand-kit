@@ -47,13 +47,16 @@ export function evaluateChecks(checks, tokensInfo) {
   return { errors, rows };
 }
 
+/** 表格单元格里的竖线要转义，换行换成空格。 */
+const escapeCell = (s) => s.replace(/\|/g, '\\|').replace(/\s*\n\s*/g, ' ');
+
 /** 生成对比度表（含起止标记）。 */
 export function contrastTable(rows) {
   const lines = [
     CONTRAST_START,
     '| 文字 / 图形 | 底色 | 对比度 | 规则 | 说明 |',
     '|---|---|---|---|---|',
-    ...rows.map((r) => `| \`${r.fg}\` ${r.hexFg} | \`${r.bg}\` ${r.hexBg} | ${r.ratio.toFixed(2)}:1 | ${CONTRAST_USAGE[r.usage].label} | ${r.note ?? ''} |`),
+    ...rows.map((r) => `| \`${r.fg}\` ${r.hexFg} | \`${r.bg}\` ${r.hexBg} | ${r.ratio.toFixed(2)}:1 | ${CONTRAST_USAGE[r.usage].label} | ${escapeCell(r.note ?? '')} |`),
     CONTRAST_END,
   ];
   return lines.join('\n');

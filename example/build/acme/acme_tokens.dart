@@ -1,9 +1,8 @@
-// acme 设计令牌：由 brand-kit build 从 acme/tokens.json 生成，不要手改（acme_tokens.dart）
+// acme 设计令牌：由 brand-kit 0.2.0 从 acme/tokens.json 生成，不要手改（acme_tokens.dart）
 
-import 'dart:ui';
+import 'package:flutter/painting.dart';
 
-class AcmeTokens {
-  AcmeTokens._();
+abstract final class AcmeTokens {
 
   /// 强调色（焦糖橙）。价格、关键数字、小面积强调。白字在上 4.05:1，只用于大字。
   /// 状态：current；渠道：web、app、marketing、print；出处：示例：产品渲染图旋钮取色（众数）
@@ -26,14 +25,14 @@ class AcmeTokens {
   static const colorDigitalWebPrimary = Color(0xFF1F4E5F);
 
   /// 白色。
-  /// 状态：current；渠道：web、app、marketing、print；出处：通用值
+  /// 状态：current；渠道：web、app、marketing、print、device；出处：通用值
   static const colorNeutralWhite = Color(0xFFFFFFFF);
 
-  /// 标题和正文字体（拉丁）。
+  /// 标题、按钮和营销物料正文（拉丁文字）。
   /// 状态：current；渠道：web、app、marketing；出处：示例：详情页 PSD 文字图层；Google Fonts，SIL OFL 1.1
   static const fontDisplay = "Source Sans 3";
 
   /// 网站和 App 卡片圆角。
   /// 状态：current；渠道：web、app；出处：示例：网站样式表
-  static const radiusCard = 12.00;
+  static const radiusCard = 12.0;
 }
