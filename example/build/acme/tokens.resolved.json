@@ -1,0 +1,181 @@
+{
+  "$description": "acme 设计令牌：由 brand-kit build 从 acme/tokens.json 生成，不要手改（tokens.resolved.json）",
+  "tokens": {
+    "color.brand.accent": {
+      "type": "color",
+      "value": "#c8611e",
+      "hex": "#C8611E",
+      "channels": [
+        "web",
+        "app",
+        "marketing",
+        "print"
+      ],
+      "status": "current",
+      "description": "强调色（焦糖橙）。价格、关键数字、小面积强调。白字在上 4.05:1，只用于大字。",
+      "source": "示例：产品渲染图旋钮取色（众数）"
+    },
+    "color.brand.accent-light": {
+      "type": "color",
+      "value": "#f2b48a",
+      "hex": "#F2B48A",
+      "channels": [
+        "web",
+        "marketing"
+      ],
+      "status": "current",
+      "description": "浅焦糖。背景块、渐变终点。上面只放 color.brand.ink 文字，不放白字（1.80:1）。",
+      "source": "示例：详情页背景块取色"
+    },
+    "color.brand.cream": {
+      "type": "color",
+      "value": "#f4ede4",
+      "hex": "#F4EDE4",
+      "channels": [
+        "web",
+        "app",
+        "marketing",
+        "print"
+      ],
+      "status": "current",
+      "description": "奶油色。浅色页面底色、卡片底色。",
+      "source": "示例：详情页底色取色"
+    },
+    "color.brand.ink": {
+      "type": "color",
+      "value": "#14181c",
+      "hex": "#14181C",
+      "channels": [
+        "web",
+        "app",
+        "marketing",
+        "print"
+      ],
+      "status": "current",
+      "description": "深色文字和深色底。",
+      "source": "示例：详情页正文取色"
+    },
+    "color.brand.primary": {
+      "type": "color",
+      "value": "#1f4e5f",
+      "hex": "#1F4E5F",
+      "channels": [
+        "web",
+        "app",
+        "marketing",
+        "print"
+      ],
+      "status": "confirmed",
+      "description": "主色（深青）。大面积底色、标题、按钮。白字在上 9.08:1。",
+      "source": "示例：VI 手册第 2 页色块取色",
+      "confirmedBy": "示例：品牌负责人，设计评审会",
+      "confirmedAt": "2026-11-01",
+      "print": {
+        "cmyk": "85 50 40 30",
+        "pantone": "示例：待打样后填写"
+      }
+    },
+    "color.device.ready": {
+      "type": "color",
+      "value": "#3fa34d",
+      "hex": "#3FA34D",
+      "channels": [
+        "device"
+      ],
+      "status": "current",
+      "description": "磨豆机屏幕“可以开始”的指示绿。只用于设备屏幕和屏幕模拟图，不进网站和广告。",
+      "source": "示例：设备 UI 设计稿取色"
+    },
+    "color.digital.web-primary": {
+      "type": "color",
+      "value": "#1f4e5f",
+      "hex": "#1F4E5F",
+      "channels": [
+        "web",
+        "app"
+      ],
+      "status": "current",
+      "description": "网站主色，指向品牌主色。",
+      "source": "示例：网站样式表"
+    },
+    "color.neutral.white": {
+      "type": "color",
+      "value": "#ffffff",
+      "hex": "#FFFFFF",
+      "channels": [
+        "web",
+        "app",
+        "marketing",
+        "print"
+      ],
+      "status": "current",
+      "description": "白色。",
+      "source": "通用值"
+    },
+    "font.body": {
+      "type": "fontFamily",
+      "value": "system-ui, -apple-system, 'Segoe UI', sans-serif",
+      "channels": [
+        "web"
+      ],
+      "status": "current",
+      "description": "网页正文用系统字体栈。",
+      "source": "示例：网站样式表"
+    },
+    "font.display": {
+      "type": "fontFamily",
+      "value": "'Source Sans 3', sans-serif",
+      "channels": [
+        "web",
+        "app",
+        "marketing"
+      ],
+      "status": "current",
+      "description": "标题和正文字体（拉丁）。",
+      "source": "示例：详情页 PSD 文字图层；Google Fonts，SIL OFL 1.1"
+    },
+    "font.packaging-cn": {
+      "type": "fontFamily",
+      "value": "'Source Han Sans SC'",
+      "channels": [
+        "print"
+      ],
+      "status": "pending",
+      "description": "包装中文字体（思源黑体）。",
+      "source": "示例：包装稿",
+      "pendingReason": "包装供应商要求的字体文件格式还没确认"
+    },
+    "gradient.warm": {
+      "type": "gradient",
+      "value": "linear-gradient(90deg, #f4ede4 0%, #f2b48a 100%)",
+      "channels": [
+        "web",
+        "marketing"
+      ],
+      "status": "current",
+      "description": "暖色横向渐变，从奶油到浅焦糖。用于横幅背景。",
+      "source": "示例：首页横幅"
+    },
+    "radius.card": {
+      "type": "dimension",
+      "value": "12px",
+      "channels": [
+        "web",
+        "app"
+      ],
+      "status": "current",
+      "description": "网站和 App 卡片圆角。",
+      "source": "示例：网站样式表"
+    },
+    "radius.card-marketing": {
+      "type": "dimension",
+      "value": "16px",
+      "channels": [
+        "marketing"
+      ],
+      "status": "current",
+      "description": "营销长图卡片圆角。",
+      "source": "示例：详情页实测"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 232 64" role="img" aria-label="Acme（虚构示例品牌）横版 logo">
+  <circle cx="32" cy="32" r="24" fill="#ffffff"/>
+  <path d="M20 40 L32 18 L44 40" fill="none" stroke="#1f4e5f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="86" cy="40" r="11"/><path d="M97 29 V51"/>
+    <path d="M131 32 A11 11 0 1 0 131 48"/>
+    <path d="M145 51 V29 M145 37 A8 8 0 0 1 161 37 V51 M161 37 A8 8 0 0 1 177 37 V51"/>
+    <path d="M191 40 H213 A11 11 0 1 0 209 48"/>
+  </g>
+</svg>

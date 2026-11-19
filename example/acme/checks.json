@@ -1,0 +1,47 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/main/schemas/checks.schema.json",
+  "$description": "Acme 的校验规则。contrast 生成 brand.md 第 3.2 节的对比度表。",
+  "contrast": [
+    {
+      "fg": "color.neutral.white",
+      "bg": "color.brand.primary",
+      "usage": "text"
+    },
+    {
+      "fg": "color.brand.ink",
+      "bg": "color.brand.cream",
+      "usage": "text"
+    },
+    {
+      "fg": "color.brand.primary",
+      "bg": "color.brand.cream",
+      "usage": "text"
+    },
+    {
+      "fg": "color.brand.ink",
+      "bg": "color.brand.accent-light",
+      "usage": "text"
+    },
+    {
+      "fg": "color.neutral.white",
+      "bg": "color.brand.accent",
+      "usage": "large-text",
+      "note": "价格块、按钮大字"
+    },
+    {
+      "fg": "color.neutral.white",
+      "bg": "color.brand.accent-light",
+      "usage": "forbidden-text",
+      "note": "浅焦糖底不放白字"
+    }
+  ],
+  "extraColors": {},
+  "names": {
+    "forbidden": [
+      {
+        "term": "Acme Mill",
+        "use": "Acme Grind G1"
+      }
+    ]
+  }
+}

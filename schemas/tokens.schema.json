@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/main/schemas/tokens.schema.json",
+  "title": "brand-kit 设计令牌（DTCG 2025.10 子集 + brand-kit 扩展）",
+  "description": "结构层面的校验，给编辑器提示用。引用解析、颜色分量和 hex 一致、渠道和引用的关系等由 brand-kit check 检查。",
+  "$ref": "#/$defs/group",
+  "$defs": {
+    "group": {
+      "type": "object",
+      "properties": {
+        "$schema": { "type": "string" },
+        "$description": { "type": "string" },
+        "$type": { "$ref": "#/$defs/type" },
+        "$extensions": { "type": "object" },
+        "$deprecated": { "type": ["boolean", "string"] }
+      },
+      "patternProperties": {
+        "^[^${}.][^{}.]*$": { "oneOf": [{ "$ref": "#/$defs/token" }, { "$ref": "#/$defs/group" }] }
+      },
+      "additionalProperties": false,
+      "not": { "required": ["$value"] }
+    },
+    "type": { "enum": ["color", "dimension", "fontFamily", "fontWeight", "number", "gradient"] },
+    "token": {
+      "type": "object",
+      "required": ["$value", "$description", "$extensions"],
+      "additionalProperties": false,
+      "properties": {
+        "$value": {},
+        "$type": { "$ref": "#/$defs/type" },
+        "$description": { "type": "string", "minLength": 1 },
+        "$deprecated": { "type": ["boolean", "string"] },
+        "$extensions": {
+          "type": "object",
+          "required": ["com.github.dayou-inc.brand-kit"],
+          "properties": { "com.github.dayou-inc.brand-kit": { "$ref": "#/$defs/kitExt" } }
+        }
+      }
+    },
+    "kitExt": {
+      "type": "object",
+      "required": ["status", "channels", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["confirmed", "current", "pending"] },
+        "channels": { "type": "array", "uniqueItems": true, "items": { "enum": ["web", "app", "marketing", "print", "device"] } },
+        "source": { "type": "string", "minLength": 1 },
+        "confirmedBy": { "type": "string", "minLength": 1 },
+        "confirmedAt": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+        "pendingReason": { "type": "string", "minLength": 1 },
+        "angle": { "type": "number" },
+        "print": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "cmyk": { "type": "string" }, "pantone": { "type": "string" } }
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "status": { "const": "confirmed" } } }, "then": { "required": ["confirmedBy", "confirmedAt"] } },
+        { "if": { "properties": { "status": { "const": "pending" } } }, "then": { "required": ["pendingReason"] } }
+      ]
+    }
+  }
+}

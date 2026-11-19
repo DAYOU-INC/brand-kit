@@ -1,0 +1,21 @@
+{
+  "name": "brand-kit",
+  "version": "0.1.0",
+  "description": "AI 时代的品牌视觉规范方法论和工具：设计令牌、规范写法、自动校验和构建",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "brand-kit": "src/cli.mjs" },
+  "files": ["src", "schemas", "templates", "docs", "README.md", "LICENSE", "CHANGELOG.md"],
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "check": "node src/cli.mjs check --root example",
+    "build": "node src/cli.mjs build --root example",
+    "test": "node --test \"test/**/*.test.mjs\""
+  },
+  "dependencies": {
+    "style-dictionary": "5.7.1"
+  },
+  "devDependencies": {
+    "ajv": "8.17.1"
+  }
+}

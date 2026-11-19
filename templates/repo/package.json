@@ -1,0 +1,12 @@
+{
+  "name": "my-brands",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "brand-kit check",
+    "build": "brand-kit build"
+  },
+  "devDependencies": {
+    "brand-kit": "github:DAYOU-INC/brand-kit#v0.1.0"
+  }
+}

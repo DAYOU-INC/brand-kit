@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/main/schemas/brand-kit.schema.json",
+  "title": "brand-kit 品牌库配置",
+  "type": "object",
+  "required": ["brands"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "brands": {
+      "description": "本库的品牌目录名列表",
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+    }
+  }
+}

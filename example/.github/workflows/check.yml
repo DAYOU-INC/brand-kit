@@ -1,0 +1,19 @@
+name: 校验
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # check 会重新生成一遍 build/ 并和仓库里的比较，未提交、过期、多余的生成文件都会报错
+      - run: npx brand-kit check

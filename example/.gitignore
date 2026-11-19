@@ -1,0 +1,12 @@
+node_modules/
+.work/
+.env
+# 大文件留在素材库，不进 git
+*.psd
+*.ai
+*.mp4
+*.mov
+*.zip
+*.rar
+Thumbs.db
+.DS_Store
