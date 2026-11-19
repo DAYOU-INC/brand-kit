@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.3.2/schemas/brand-kit.schema.json",
+  "$schema": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.3.3/schemas/brand-kit.schema.json",
   "brands": [
     "acme"
   ]

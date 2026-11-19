@@ -26,7 +26,7 @@ AI 有明确的入口（`AGENTS.md`），分两种角色：维护品牌库的 AI
 需要 Node.js 22 或更高版本。
 
 ```bash
-npx https://github.com/DAYOU-INC/brand-kit/archive/refs/tags/v0.3.2.tar.gz init my-brands
+npx https://github.com/DAYOU-INC/brand-kit/archive/refs/tags/v0.3.3.tar.gz init my-brands
 cd my-brands && git init -b main && npm install
 npx brand-kit new acme       # 新增品牌，按模板填写
 npx brand-kit build          # 由 tokens.json 生成 build/，更新对比度表
