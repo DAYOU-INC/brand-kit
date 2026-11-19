@@ -1,5 +1,5 @@
 {
-  "$description": "acme 设计令牌：由 brand-kit 0.3.1 从 acme/tokens.json 生成，不要手改（tokens.resolved.json）",
+  "$description": "acme 设计令牌：由 brand-kit 0.3.2 从 acme/tokens.json 生成，不要手改（tokens.resolved.json）",
   "tokens": {
     "color.brand.accent": {
       "type": "color",

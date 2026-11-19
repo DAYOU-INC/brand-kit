@@ -2,8 +2,8 @@
 *.png binary
 *.jpg binary
 *.pdf binary
-test/ export-ignore
-example/ export-ignore
-.github/ export-ignore
-AGENTS.md export-ignore
-CLAUDE.md export-ignore
+/test/ export-ignore
+/example/ export-ignore
+/.github/ export-ignore
+/AGENTS.md export-ignore
+/CLAUDE.md export-ignore

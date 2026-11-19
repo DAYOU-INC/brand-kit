@@ -1,6 +1,6 @@
 # 给 AI 的说明
 
-这是一个品牌视觉标准库，用 [brand-kit](https://github.com/DAYOU-INC/brand-kit) 管理。品牌列表在 `brand-kit.json`，每个品牌一个目录。方法论和完整规则在 brand-kit 的文档里：品牌库里 `npm ci` 之后在 `node_modules/brand-kit/docs/`；没装依赖时直接看 GitHub 上对应版本的文档：`https://github.com/DAYOU-INC/brand-kit/tree/v0.3.1/docs`。
+这是一个品牌视觉标准库，用 [brand-kit](https://github.com/DAYOU-INC/brand-kit) 管理。品牌列表在 `brand-kit.json`，每个品牌一个目录。方法论和完整规则在 brand-kit 的文档里：品牌库里 `npm ci` 之后在 `node_modules/brand-kit/docs/`；没装依赖时直接看 GitHub 上对应版本的文档：`https://github.com/DAYOU-INC/brand-kit/tree/v0.3.2/docs`。
 
 ## 0. 先判断你的角色
 

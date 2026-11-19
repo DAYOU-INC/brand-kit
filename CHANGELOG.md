@@ -2,6 +2,10 @@
 
 格式：每个版本一节，写新增、变更（含不兼容改动和迁移方法）、修复。版本规则见 [docs/版本与发布.md](docs/版本与发布.md)。
 
+## v0.3.2（2026-11-19）
+
+- 修复：发布包里缺少 `templates/repo/` 的 `AGENTS.md`、`CLAUDE.md` 和 `.github/`，`init` 生成的品牌库没有 AI 入口、自动校验和合并请求模板（v0.3.0、v0.3.1 受影响）。原因是 `.gitattributes` 的 export-ignore 规则没有限定在根目录。已用 v0.3.0 / v0.3.1 建库的，从 `node_modules/brand-kit/templates/repo/` 补上这几个文件，或者升级后重新 `init` 到新目录再拷贝过去
+
 ## v0.3.1（2026-11-19）
 
 - 修复：Windows + Node 22 上 `init`、`new` 复制模板到含中文的路径时静默失败（不再用 `fs.cpSync`，改为逐个文件复制）
