@@ -34,6 +34,24 @@ test('new 拒绝不合法和重复的品牌名', () => {
   rmSync(base, { recursive: true, force: true });
 });
 
+test('new 拒绝保留名和连字符结尾的名字', () => {
+  const base = mkdtempSync(join(tmpdir(), 'brand-kit-cli-'));
+  const dir = join(base, 'r');
+  run(['init', dir]);
+  for (const bad of ['build', 'node_modules', 'acme-', 'a--b']) assert.equal(run(['new', bad], dir).status, 1, bad);
+  rmSync(base, { recursive: true, force: true });
+});
+
+test('contrast 算出对比度并给出能用的场景；多余参数报错', () => {
+  const r = run(['contrast', '#ffffff', '#c8611e']);
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /4.05:1/);
+  assert.match(r.stdout, /不行 {2}text/);
+  assert.equal(run(['build', 'acme', '--root', 'x']).status, 1);
+  assert.equal(run(['check', '--foo']).status, 1);
+  assert.equal(run(['check', '--root']).status, 1);
+});
+
 test('color 输出合法的颜色对象', () => {
   const r = run(['color', '#2F5E7A']);
   assert.equal(r.status, 0);

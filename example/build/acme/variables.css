@@ -1,26 +1,26 @@
-/* acme 设计令牌：由 brand-kit 0.2.0 从 acme/tokens.json 生成，不要手改（variables.css） */
+/* acme 设计令牌：由 brand-kit 0.3.0 从 acme/tokens.json 生成，不要手改（variables.css） */
 
 :root {
-  /* 强调色（焦糖橙）。价格、关键数字、小面积强调。白字在上 4.05:1，只用于大字。 */
+  /* 强调色（焦糖橙）。价格、关键数字、小面积强调。白字在上 4.05:1，只用于大字。（状态：current；渠道：web、app、marketing、print） */
   --acme-color-brand-accent: #c8611e;
-  /* 浅焦糖。背景块、渐变终点。上面只放 color.brand.ink 文字，不放白字（1.80:1）。 */
+  /* 浅焦糖。背景块、渐变终点。上面只放 color.brand.ink 文字，不放白字（1.80:1）。（状态：current；渠道：web、marketing） */
   --acme-color-brand-accent-light: #f2b48a;
-  /* 奶油色。浅色页面底色、卡片底色。 */
+  /* 奶油色。浅色页面底色、卡片底色。（状态：current；渠道：web、app、marketing、print） */
   --acme-color-brand-cream: #f4ede4;
-  /* 深色文字和深色底。 */
+  /* 深色文字和深色底。（状态：current；渠道：web、app、marketing、print） */
   --acme-color-brand-ink: #14181c;
-  /* 主色（深青）。大面积底色、标题、按钮。白字在上 9.08:1。 */
+  /* 主色（深青）。大面积底色、标题、按钮。白字在上 9.08:1。（状态：confirmed；渠道：web、app、marketing、print） */
   --acme-color-brand-primary: #1f4e5f;
-  /* 白色。 */
+  /* 白色。（状态：current；渠道：web、app、marketing、print、device） */
   --acme-color-neutral-white: #ffffff;
-  /* 网页正文用系统字体栈。 */
+  /* 网页正文用系统字体栈。（状态：current；渠道：web） */
   --acme-font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* 标题、按钮和营销物料正文（拉丁文字）。 */
+  /* 标题、按钮和营销物料正文（拉丁文字）。（状态：current；渠道：web、app、marketing） */
   --acme-font-display: "Source Sans 3", sans-serif;
-  /* 暖色横向渐变，从奶油到浅焦糖。用于横幅背景。 */
+  /* 暖色横向渐变，从奶油到浅焦糖。用于横幅背景。（状态：current；渠道：web、marketing） */
   --acme-gradient-warm: linear-gradient(90deg, #f4ede4 0%, #f2b48a 100%);
-  /* 网站和 App 卡片圆角。 */
+  /* 网站和 App 卡片圆角。（状态：current；渠道：web、app） */
   --acme-radius-card: 12px;
-  /* 网站主色，指向品牌主色。 */
+  /* 网站主色，指向品牌主色。（状态：current；渠道：web、app） */
   --acme-color-digital-web-primary: var(--acme-color-brand-primary);
 }

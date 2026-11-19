@@ -3,7 +3,8 @@ import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020.js';
 import {
-  NS, loadRepoConfig, readText, REQUIRED_SECTIONS, BANNED_STATUS_WORDS, NAMES_SECTION, CONTRAST_START, NOT_HUMAN,
+  NS, CHANNELS, STATUSES, loadRepoConfig, readText, REQUIRED_SECTIONS, BANNED_STATUS_WORDS, NAMES_SECTION,
+  CONTRAST_START, CONTRAST_SECTION, NOT_HUMAN, termRegex, BOM_RE,
 } from './config.mjs';
 import { validateTokens, hexOf, realDate } from './tokens.mjs';
 import { evaluateChecks, findContrastBlock } from './contrast.mjs';
@@ -13,13 +14,26 @@ import {
 import { renderBrand, renderBrandMd } from './build.mjs';
 
 const FILE_EXT = /\.(md|json|png|jpe?g|webp|svg|pdf|mjs|js|css|dart|ai|psd|mp4|txt|html)$/i;
-/** 模板占位符：尖括号里有中文、省略号或 YYYY；不把 <br>、<https://…> 这类当成占位符。 */
-const PLACEHOLDER = /<(?!https?:|mailto:|\/?[a-z][a-z0-9]*\s*\/?>)[^<>\n]*?(?:[一-鿿]|…|YYYY)[^<>\n]*>/;
+/** 常见 HTML 标签（带不带属性都不算占位符）。 */
+const HTML_TAG = /^<\/?(a|abbr|b|br|code|del|details|div|em|hr|i|img|kbd|li|ol|p|picture|pre|small|source|span|strong|sub|summary|sup|table|tbody|td|th|thead|tr|u|ul|video)(\s[^<>]*)?\/?>$/i;
+/** 模板占位符：尖括号里有中文、省略号或 YYYY，且不是 HTML 标签、自动链接。 */
+const PLACEHOLDER_CANDIDATE = /<[^<>\n]*?(?:[一-鿿]|…|YYYY)[^<>\n]*>/g;
+const findPlaceholder = (s) => (s.match(PLACEHOLDER_CANDIDATE) ?? []).find((m) => !HTML_TAG.test(m) && !/^<(https?:|mailto:)/.test(m));
+/** 色值：前面不是字母数字、& 或 #，正好 6 位十六进制，后面不跟字母数字（话题标签、HTML 实体不算）。 */
+const HEX6 = /(?<![\w&#])#[0-9A-Fa-f]{6}(?![\w])/g;
+const BANNED = BANNED_STATUS_WORDS.map((w) => [w, termRegex(w)]);
 
 const schemaDir = new URL('../schemas/', import.meta.url);
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 const schemas = Object.fromEntries(['tokens', 'checks'].map((n) => [n, ajv.compile(JSON.parse(readFileSync(new URL(`${n}.schema.json`, schemaDir), 'utf8')))]));
-const schemaErrors = (name, data) => (schemas[name](data) ? [] : schemas[name].errors.map((e) => `结构不符合 schemas/${name}.schema.json：${e.instancePath || '(根)'} ${e.message}${e.params?.additionalProperty ? `（${e.params.additionalProperty}）` : ''}`));
+/** Schema 报错只取最有用的几条（避免 oneOf 产生一大串英文噪声）。 */
+const schemaErrors = (name, data) => {
+  if (schemas[name](data)) return [];
+  const errs = schemas[name].errors.filter((e) => !['oneOf', 'anyOf', 'if', 'not'].includes(e.keyword));
+  const deepest = Math.max(...errs.map((e) => e.instancePath.split('/').length));
+  return errs.filter((e) => e.instancePath.split('/').length === deepest).slice(0, 5)
+    .map((e) => `结构不符合 schemas/${name}.schema.json：${e.instancePath || '(根)'} ${e.message}${e.params?.additionalProperty ? `（${e.params.additionalProperty}）` : ''}`);
+};
 
 function walkMd(root, dir = '', out = []) {
   for (const d of readdirSync(join(root, dir), { withFileTypes: true })) {
@@ -37,8 +51,10 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
   let cfg;
   try { cfg = loadRepoConfig(root); } catch (e) { return { errors: [e.message], brands: [] }; }
   const brands = cfg.brands;
-  const read = (p) => readText(join(root, p));
   const isDir = (p) => existsSync(p) && statSync(p).isDirectory();
+  const read = (p) => {
+    try { return readText(join(root, p)); } catch (e) { err(p, e.message); return null; }
+  };
 
   // 0. 没登记的品牌目录、build 里多余的目录
   for (const d of readdirSync(root, { withFileTypes: true })) {
@@ -55,31 +71,46 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
     for (const d of ['assets', 'examples']) if (!isDir(join(root, brand, d))) err(brand, `缺少 ${d}/ 目录（可以先放一个 .gitkeep）`);
     if (!existsSync(join(root, brand, 'tokens.json'))) continue;
 
-    // 1. 令牌
+    // 1. 令牌：先跑 brand-kit 自己的校验（中文、定位准）；没有问题时再用 Schema 兜底
+    const tokensText = read(`${brand}/tokens.json`);
+    if (tokensText === null) continue;
     let raw;
-    try { raw = JSON.parse(read(`${brand}/tokens.json`)); } catch (e) { err(`${brand}/tokens.json`, `JSON 格式错误：${e.message}`); continue; }
-    for (const m of schemaErrors('tokens', raw)) err(`${brand}/tokens.json`, m);
+    try { raw = JSON.parse(tokensText); } catch (e) { err(`${brand}/tokens.json`, `JSON 格式错误：${e.message}`); continue; }
     const info = validateTokens(raw);
     for (const e of info.errors) err(`${brand}/tokens.json ${e.token}`, e.msg);
+    if (!info.errors.length) for (const m of schemaErrors('tokens', raw)) err(`${brand}/tokens.json`, m);
 
     // 2. checks.json
     let checks = null;
+    let checksOk = false;
     if (existsSync(join(root, brand, 'checks.json'))) {
-      try { checks = JSON.parse(read(`${brand}/checks.json`)); } catch (e) { err(`${brand}/checks.json`, `JSON 格式错误：${e.message}`); }
+      const text = read(`${brand}/checks.json`);
+      if (text !== null) {
+        try { checks = JSON.parse(text); } catch (e) { err(`${brand}/checks.json`, `JSON 格式错误：${e.message}`); }
+      }
     }
     if (checks) {
-      for (const m of schemaErrors('checks', checks)) err(`${brand}/checks.json`, m);
-      for (const m of evaluateChecks(checks, info).errors) err(`${brand}/checks.json`, m);
+      const own = evaluateChecks(checks, info).errors;
+      for (const m of own) err(`${brand}/checks.json`, m);
+      const sch = own.length ? [] : schemaErrors('checks', checks);
+      for (const m of sch) err(`${brand}/checks.json`, m);
+      checksOk = !own.length && !sch.length;
     }
     const extra = new Map(Object.entries(checks?.extraColors ?? {}).map(([h, why]) => [h.toUpperCase(), why]));
-    const forbidden = (checks?.names?.forbidden ?? []).filter((f) => typeof f?.term === 'string' && f.term);
-    const hasForbidden = (s) => forbidden.find((f) => s.toLowerCase().includes(f.term.toLowerCase()));
+    const forbidden = (checks?.names?.forbidden ?? []).filter((f) => typeof f?.term === 'string' && f.term).map((f) => ({ ...f, re: termRegex(f.term) }));
+    const hasForbidden = (s) => forbidden.find((f) => f.re.test(s));
 
     // 令牌里没填的占位符、禁用的名字
     for (const [name, t] of info.tokens) {
-      const texts = [t.$description, t.$extensions?.[NS]?.source, t.$extensions?.[NS]?.pendingReason, JSON.stringify(t.$value)].filter((x) => typeof x === 'string');
+      const e = t.$extensions?.[NS] ?? {};
+      const texts = [t.$description, e.source, e.pendingReason, e.confirmedBy, ...Object.values(e.print ?? {}), JSON.stringify(t.$value)].filter((x) => typeof x === 'string');
       const joined = texts.join(' ');
-      if (!allowPlaceholders && PLACEHOLDER.test(joined)) err(`${brand}/tokens.json ${name}`, `还有没填的占位符：${joined.match(PLACEHOLDER)[0]}`);
+      const ph = findPlaceholder(joined);
+      if (!allowPlaceholders && ph) err(`${brand}/tokens.json ${name}`, `还有没填的占位符：${ph}`);
+      for (const v of Object.values(e.print ?? {})) {
+        const w = typeof v === 'string' && BANNED.find(([, re]) => re.test(v) || /待处理/.test(v));
+        if (w) err(`${brand}/tokens.json ${name}`, `print 只写已经定下来的值，“${v}”不是值；没定的删掉这个字段，写进第 10.1 节`);
+      }
       const f = typeof t.$description === 'string' && hasForbidden(t.$description);
       if (f) err(`${brand}/tokens.json ${name}`, `描述里用了禁用的名字“${f.term}”，改成“${f.use}”`);
     }
@@ -87,6 +118,7 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
     // 3. brand.md
     if (!existsSync(join(root, brand, 'brand.md'))) continue;
     const md = read(`${brand}/brand.md`);
+    if (md === null) continue;
     const where = (i) => `${brand}/brand.md:${i + 1}`;
 
     const sections = h2s(md);
@@ -99,8 +131,15 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
     const noComment = blankComments(rawLines);
     const namesRange = sectionRange(rawLines, NAMES_SECTION);
     if (!namesRange) err(`${brand}/brand.md`, `缺少“${NAMES_SECTION}”一节`);
+    const contrastRange = sectionRange(rawLines, CONTRAST_SECTION);
     const contrastBlock = findContrastBlock(md);
+    if (!contrastRange) err(`${brand}/brand.md`, `缺少“${CONTRAST_SECTION}”一节`);
     if (!contrastBlock) err(`${brand}/brand.md`, `第 3.2 节要放自动生成的对比度表：写一行 ${CONTRAST_START} 和结束标记，再运行 brand-kit build`);
+    else if (contrastRange) {
+      const startLine = md.slice(0, contrastBlock.start).split('\n').length - 1;
+      const endLine = md.slice(0, contrastBlock.end).split('\n').length - 1;
+      if (startLine < contrastRange[0] || endLine >= contrastRange[1] || inCode[startLine]) err(where(startLine), '对比度表必须放在“### 3.2 文字对比度”这一节里，不能在代码块里');
+    }
 
     const tokenByHex = new Map();
     for (const [name, t] of info.tokens) {
@@ -111,18 +150,17 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
       tokenByHex.get(h).push(name);
     }
     const topGroups = Object.keys(raw).filter((k) => !k.startsWith('$'));
-    const allNames = [...info.tokens.keys(), ...info.groups];
-    const lastSegments = new Set(allNames.map((n) => n.split('.').at(-1)));
+    const tokenNames = [...info.tokens.keys()];
+    const allNames = [...tokenNames, ...info.groups];
+    const tokenTails = new Set(tokenNames.map((n) => n.split('.').at(-1)));
+    const notShorthand = new Set([...CHANNELS, ...STATUSES, ...topGroups]);
     const usedExtra = new Set();
 
     rawLines.forEach((line, i) => {
       // 3.1 色值：必须是令牌值或登记的例外；正文里同一行还要写出令牌全名（代码块里不要求）
       const scan = line.replace(/\]\([^)]*\)/g, ']()');
-      for (const hex of scan.match(/#[0-9A-Fa-f]{3,8}\b/g) ?? []) {
-        const len = hex.length - 1;
-        if (![3, 4, 6, 8].includes(len) || (len !== 6 && /^#\d+$/.test(hex))) continue;
+      for (const hex of scan.match(HEX6) ?? []) {
         const H = hex.toUpperCase();
-        if (len !== 6) { err(where(i), `色值 ${hex} 要写成 6 位 #RRGGBB`); continue; }
         if (extra.has(H)) { usedExtra.add(H); continue; }
         const names = tokenByHex.get(H);
         if (!names) { err(where(i), `色值 ${hex} 不是任何令牌的值。先加令牌，或在 checks.json 的 extraColors 写明原因`); continue; }
@@ -140,10 +178,9 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
             const re = new RegExp('^' + name.replace(/[.]/g, '\\.').replace(/\*/g, '[a-z0-9-]*') + '$');
             if (!allNames.some((n) => re.test(n))) err(where(i), `令牌名 ${name} 一个令牌都匹配不到`);
           } else if (!allNames.includes(name)) err(where(i), `令牌名 ${name} 不存在`);
-        } else if (/^[a-z][a-z0-9-]*(\.[a-z0-9*-]+)*$/.test(name) && !topGroups.includes(name)) {
+        } else if (/^[a-z][a-z0-9-]*(\.[a-z0-9*-]+)*$/.test(name) && !notShorthand.has(name)) {
           const tail = name.replace(/\.\*$/, '');
-          if (allNames.some((n) => n.endsWith('.' + tail))) err(where(i), `令牌名要写全名，不要简写：${name}`);
-          else if (!name.includes('.') && lastSegments.has(name)) err(where(i), `令牌名要写全名，不要简写：${name}`);
+          if (name.includes('.') ? allNames.some((n) => n.endsWith('.' + tail)) : tokenTails.has(name)) err(where(i), `令牌名要写全名，不要简写：${name}`);
         }
       }
     });
@@ -154,11 +191,11 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
     rawLines.forEach((line, i) => {
       if (!inCode[i]) {
         const text = stripInline(noComment[i]);
-        for (const w of BANNED_STATUS_WORDS) if (text.toLowerCase().includes(w.toLowerCase())) err(where(i), `“${w}”不是规定的状态说法，只能用「已确认」「按现状执行」「待处理」`);
+        for (const [w, re] of BANNED) if (re.test(text)) err(where(i), `“${w}”不是规定的状态说法，只能用「已确认」「按现状执行」「待处理」`);
         if (/\|\s*确定\s*\|/.test(prose[i])) err(where(i), '状态写“确定”有歧义，改成「已确认」（要有确认人）或「按现状执行」');
       }
-      const ph = noComment[i].match(PLACEHOLDER);
-      if (!allowPlaceholders && ph) err(where(i), `还有没填的占位符：${ph[0]}`);
+      const ph = findPlaceholder(noComment[i]);
+      if (!allowPlaceholders && ph) err(where(i), `还有没填的占位符：${ph}`);
       const inNames = namesRange && i >= namesRange[0] && i < namesRange[1];
       const f = !inNames && hasForbidden(noComment[i]);
       if (f) err(where(i), `用了禁用的名字“${f.term}”，改成“${f.use}”`);
@@ -168,7 +205,7 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
     const cl = sectionRange(rawLines, '## 变更记录');
     if (cl) {
       const rows = [];
-      for (let i = cl[0] + 1; i < cl[1]; i++) if (rawLines[i].trim().startsWith('|')) rows.push(i);
+      for (let i = cl[0] + 1; i < cl[1]; i++) if (!inCode[i] && rawLines[i].trim().startsWith('|')) rows.push(i);
       if (rawLines[rows[0]]?.replace(/\s/g, '') !== '|日期|变更|确认|') err(`${brand}/brand.md`, '变更记录的表头要是“| 日期 | 变更 | 确认 |”');
       if (!/^\|\s*:?-{3,}:?\s*\|\s*:?-{3,}:?\s*\|\s*:?-{3,}:?\s*\|$/.test(rawLines[rows[1]]?.trim() ?? '')) err(`${brand}/brand.md`, '变更记录表头下面要有分隔行“|---|---|---|”');
       if (rows.length < 3) err(`${brand}/brand.md`, '变更记录至少要有一行');
@@ -176,18 +213,18 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
       for (const i of rows.slice(2)) {
         const cells = rawLines[i].split('|').slice(1, -1).map((c) => c.trim());
         if (cells.length !== 3) { err(where(i), '变更记录每行要有 3 列'); continue; }
-        if (!realDate(cells[0]) && !isPh(cells[0])) err(where(i), '变更记录的日期要写成真实的 YYYY-MM-DD');
+        if (!realDate(cells[0]) && !isPh(cells[0])) err(where(i), '变更记录的日期要写成真实存在、不晚于今天的 YYYY-MM-DD');
         const c = cells[2];
         const m = c.match(/^([^，,]+)[，,]([^，,]+)[，,]\s*(\d{4}-\d{2}-\d{2})$/);
-        if (c !== '未确认' && !(m && realDate(m[3]))) err(where(i), '变更记录的“确认”只能写“未确认”，或“确认人，渠道，YYYY-MM-DD”');
+        if (c !== '未确认' && !(m && realDate(m[3]))) err(where(i), '变更记录的“确认”只能写“未确认”，或“确认人，渠道，YYYY-MM-DD”（日期真实、不晚于今天）');
         else if (m && NOT_HUMAN.test(m[1])) err(where(i), '变更记录的确认人必须是人；AI 和推断不能算确认');
       }
     }
 
     // 3.5 生成的内容是不是最新
-    if (!info.errors.length && checks && !evaluateChecks(checks, info).errors.length) {
+    if (!info.errors.length && checksOk) {
       try {
-        if (contrastBlock && renderBrandMd(root, brand).replace(/^﻿/, '').replace(/\r\n/g, '\n') !== md) err(`${brand}/brand.md`, '第 3.2 节的对比度表和 checks.json 不一致，运行 brand-kit build');
+        if (contrastBlock && renderBrandMd(root, brand).replace(BOM_RE, '').replace(/\r\n/g, '\n') !== md) err(`${brand}/brand.md`, '第 3.2 节的对比度表和 checks.json 不一致，运行 brand-kit build');
         const files = renderBrand(root, brand);
         const dir = join(root, 'build', brand);
         for (const [f, content] of files) {
@@ -203,6 +240,7 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
   // 4. 所有 md：相对链接和锚点（大小写严格）；品牌目录里的 md：素材路径、占位符
   for (const file of walkMd(root)) {
     const md = read(file);
+    if (md === null) continue;
     const lines = blankFences(md);
     const brand = file.split('/')[0];
     const inBrand = brands.includes(brand);
@@ -215,7 +253,11 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
         const base = join(root, dirname(file));
         if (decoded && !existsExact(root, base, decoded)) { err(`${file}:${i + 1}`, `链接 ${target} 指向的文件不存在（注意大小写；不能指向品牌库外面）`); continue; }
         const targetFile = decoded ? join(base, decoded) : join(root, file);
-        if (anchor && targetFile.endsWith('.md') && !anchors(readText(targetFile)).has(safeDecode(anchor))) err(`${file}:${i + 1}`, `链接 ${target} 的锚点 #${anchor} 不存在`);
+        if (anchor && targetFile.endsWith('.md')) {
+          let text = null;
+          try { text = readText(targetFile); } catch { /* 编码问题在读该文件时已报 */ }
+          if (text !== null && !anchors(text).has(safeDecode(anchor))) err(`${file}:${i + 1}`, `链接 ${target} 的锚点 #${anchor} 不存在`);
+        }
       }
       if (!inBrand) return;
       for (const [, p] of line.matchAll(/`((?:assets|examples)\/[^`*<>]+)`/g)) {
@@ -224,8 +266,8 @@ export async function checkRepo(root, { allowPlaceholders = false } = {}) {
     });
     if (inBrand && !file.endsWith('/brand.md') && !allowPlaceholders) {
       blankComments(md.split('\n')).forEach((line, i) => {
-        const ph = line.match(PLACEHOLDER);
-        if (ph) err(`${file}:${i + 1}`, `还有没填的占位符：${ph[0]}`);
+        const ph = findPlaceholder(line);
+        if (ph) err(`${file}:${i + 1}`, `还有没填的占位符：${ph}`);
       });
     }
   }

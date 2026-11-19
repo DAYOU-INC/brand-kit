@@ -67,8 +67,8 @@ export function anchors(md) {
   return out;
 }
 
-/** 二级标题列表（不含代码块里的）。 */
-export const h2s = (md) => blankFences(md).map((l) => l.match(/^##\s+(.+?)\s*$/)?.[1]).filter(Boolean);
+/** 二级标题列表（不含代码块和 HTML 注释里的）。 */
+export const h2s = (md) => blankComments(blankFences(md)).map((l) => l.match(/^##\s+(.+?)\s*$/)?.[1]).filter(Boolean);
 
 /** 返回 [起始行, 结束行)：某个标题到下一个同级或更高级标题之前（代码块里的 # 不算）。行号从 0 开始。 */
 export function sectionRange(lines, heading) {

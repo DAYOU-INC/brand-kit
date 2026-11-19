@@ -5,14 +5,33 @@ import { join } from 'node:path';
 /** brand-kit 版本（写进生成文件头）。 */
 export const KIT_VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 
-/** 令牌名的每一段：小写字母开头，只能有小写字母、数字和单个连字符。 */
+/** 令牌名的每一段、品牌名：小写字母开头，只能有小写字母、数字和单个连字符。 */
 export const NAME_SEGMENT = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
 
-/** 确认人不能是 AI 或推断。 */
-export const NOT_HUMAN = /(^|[^A-Za-z])AI([^A-Za-z]|$)|推断|Claude|GPT|Copilot|机器人|自动/i;
+/** 不能用作品牌名的目录名（会和生成目录、工具目录冲突）。 */
+export const RESERVED_BRAND_NAMES = ['build', 'node_modules', 'templates', 'docs', 'scripts', 'schemas', 'src', 'test', 'tests', 'assets', 'examples', 'example'];
 
-/** 读 JSON / 文本：去掉 UTF-8 BOM，换行统一成 LF。 */
-export const readText = (p) => readFileSync(p, 'utf8').replace(/^﻿/, '').replace(/\r\n/g, '\n');
+/** 品牌名不合法时返回原因，合法时返回 null。 */
+export function brandNameProblem(name) {
+  if (typeof name !== 'string' || !NAME_SEGMENT.test(name)) return '只能用小写字母、数字和单个连字符，以字母开头，不能以连字符结尾';
+  if (RESERVED_BRAND_NAMES.includes(name)) return `“${name}”是保留名，不能用作品牌名`;
+  return null;
+}
+
+/** 确认人不能是 AI 或推断。 */
+export const NOT_HUMAN = /(^|[^A-Za-z])(AI|GPT|Copilot)([^A-Za-z]|$)|推断|机器人/i;
+
+const BOM = String.fromCharCode(0xfeff);
+/** 开头的 UTF-8 BOM。 */
+export const BOM_RE = new RegExp(`^${BOM}`);
+const REPLACEMENT = String.fromCharCode(0xfffd);
+
+/** 读 JSON / 文本：去掉 UTF-8 BOM，换行统一成 LF。文件不是合法 UTF-8 时抛异常。 */
+export function readText(p) {
+  const s = readFileSync(p, 'utf8');
+  if (s.includes(REPLACEMENT)) throw new Error(`${p} 不是 UTF-8 编码（或含有无法解码的字节），请另存为 UTF-8`);
+  return (s.startsWith(BOM) ? s.slice(1) : s).replace(/\r\n/g, '\n');
+}
 
 /** $extensions 里 brand-kit 自己的命名空间（DTCG 建议厂商扩展用反向域名作键）。 */
 export const NS = 'com.github.dayou-inc.brand-kit';
@@ -20,13 +39,13 @@ export const NS = 'com.github.dayou-inc.brand-kit';
 /** 令牌状态。 */
 export const STATUSES = ['confirmed', 'current', 'pending'];
 
-/** 令牌可以导出到的渠道。web → CSS，app → Flutter，其他只进 tokens.resolved.json。 */
+/** 令牌可以导出到的渠道。web → CSS，app → Flutter，全部导出渠道 → tokens.resolved.json 和 tokens.dtcg.json。 */
 export const CHANNELS = ['web', 'app', 'marketing', 'print', 'device'];
 
 /** 支持的 $type（DTCG 2025.10 的子集）。 */
 export const TYPES = ['color', 'dimension', 'fontFamily', 'fontWeight', 'number', 'gradient'];
 
-/** 对比度用途和最低要求（WCAG 2.x）。forbidden-text 表示禁止用于文字，只记录、不设下限。 */
+/** 对比度用途和最低要求（WCAG 2.x AA）。forbidden-text 表示禁止用于文字，只记录、不设下限。 */
 export const CONTRAST_USAGE = {
   text: { min: 4.5, label: '正文（AA，任意字号）' },
   'large-text': { min: 3, label: '大字（AA，≥24px 常规，或 ≥18.67px 粗体）' },
@@ -50,26 +69,36 @@ export const REQUIRED_SECTIONS = [
   '变更记录',
 ];
 
-/** 正文里只允许三种状态说法，这些词会报错。 */
-export const BANNED_STATUS_WORDS = ['待确认', '待办', '待定', '待决定', '待统一', '未定', '待核实', '待补充', '待商定', '暂定', 'TBD', 'TODO'];
+/** 正文里只允许三种状态说法，这些词会报错。英文词按整词匹配。 */
+export const BANNED_STATUS_WORDS = ['待确认', '待办', '待定', '待决定', '待统一', '待核实', '待补充', '待商定', '暂定', 'TBD', 'TODO'];
 
-/** 自动生成的对比度表在 brand.md 里的起止标记。 */
+/** 自动生成的对比度表在 brand.md 里的起止标记，以及它所在的小节。 */
 export const CONTRAST_START = '<!-- brand-kit:contrast 由 brand-kit build 生成，不要手改 -->';
 export const CONTRAST_END = '<!-- /brand-kit:contrast -->';
+export const CONTRAST_SECTION = '### 3.2 文字对比度';
 
 /** 名称段落：checks.json 的 names.forbidden 在这一节里允许出现（用来列出禁用的旧名）。 */
 export const NAMES_SECTION = '### 1.1 正式名称';
+
+/** 英文和数字按整词匹配，其他按子串匹配。 */
+export function termRegex(term) {
+  const esc = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pre = /^[A-Za-z0-9]/.test(term) ? '(?<![A-Za-z0-9])' : '';
+  const post = /[A-Za-z0-9]$/.test(term) ? '(?![A-Za-z0-9])' : '';
+  return new RegExp(pre + esc + post, 'i');
+}
 
 export function loadRepoConfig(root) {
   const p = join(root, 'brand-kit.json');
   if (!existsSync(p)) throw new Error(`${root} 下没有 brand-kit.json，不是品牌库根目录（用 brand-kit init 创建）`);
   let cfg;
-  try { cfg = JSON.parse(readText(p)); } catch (e) { throw new Error(`brand-kit.json 不是合法 JSON：${e.message}`); }
+  try { cfg = JSON.parse(readText(p)); } catch (e) { throw new Error(`brand-kit.json 读取失败：${e.message}`); }
   if (!Array.isArray(cfg.brands)) throw new Error('brand-kit.json 缺少 brands 数组');
   if (new Set(cfg.brands).size !== cfg.brands.length) throw new Error('brand-kit.json 的 brands 有重复');
   for (const k of Object.keys(cfg)) if (!['$schema', 'brands'].includes(k)) throw new Error(`brand-kit.json 有不认识的字段 "${k}"`);
   for (const b of cfg.brands) {
-    if (typeof b !== 'string' || !/^[a-z][a-z0-9-]*$/.test(b)) throw new Error(`brand-kit.json 里的品牌名 ${JSON.stringify(b)} 不合法：只能用小写字母、数字和连字符`);
+    const why = brandNameProblem(b);
+    if (why) throw new Error(`brand-kit.json 里的品牌名 ${JSON.stringify(b)} 不合法：${why}`);
   }
   return cfg;
 }

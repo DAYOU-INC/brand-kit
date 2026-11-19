@@ -2,7 +2,7 @@
 // 渠道规则：web → variables.css；app → <品牌>_tokens.dart；channels 非空的都进 tokens.resolved.json 和 tokens.dtcg.json。
 import { mkdirSync, rmSync, writeFileSync, readFileSync, existsSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
-import { NS, KIT_VERSION, readText } from './config.mjs';
+import { NS, KIT_VERSION, readText, BOM_RE } from './config.mjs';
 import { validateTokens, ext, hexOf, isRef, cssName, dartName } from './tokens.mjs';
 import { evaluateChecks, contrastTable, findContrastBlock } from './contrast.mjs';
 
@@ -23,16 +23,25 @@ export function cssValue(type, v, angle) {
   }
 }
 
+/** Dart 浮点字面量：整数补 .0，其他保留原值（不四舍五入）。 */
+const dartNumber = (n) => (Number.isInteger(n) ? `${n}.0` : String(n));
+/** Dart 字符串字面量：转义反斜杠、引号和 $（否则会被当成字符串插值）。 */
+const dartString = (s) => {
+  const BS = String.fromCharCode(92); // 反斜杠
+  const body = String(s).split(BS).join(BS + BS).split("'").join(BS + "'").split('$').join(BS + '$').split('\n').join(' ');
+  return `'${body}'`;
+};
+
 function dartValue(type, v) {
   switch (type) {
     case 'color': return `Color(0xFF${v.hex.slice(1).toUpperCase()})`;
-    case 'dimension': return (v.unit === 'rem' ? v.value * 16 : v.value).toFixed(1);
+    case 'dimension': return dartNumber(v.unit === 'rem' ? v.value * 16 : v.value);
     case 'fontFamily': {
       const list = Array.isArray(v) ? v : [v];
-      return JSON.stringify(list.find((f) => !SYSTEM_FONTS.includes(f)) ?? list[0]);
+      return dartString(list.find((f) => !SYSTEM_FONTS.includes(f)) ?? list[0]);
     }
     case 'fontWeight': return `FontWeight.w${v}`;
-    case 'number': return Number.isInteger(v) ? `${v}.0` : String(v);
+    case 'number': return dartNumber(v);
     default: return null;
   }
 }
@@ -56,7 +65,7 @@ function loadTokens(root, brand) {
 export function renderBrand(root, brand) {
   const { info } = loadTokens(root, brand);
   const files = new Map();
-  const list = [...info.tokens.entries()].sort(([a], [b]) => a.localeCompare(b));
+  const list = [...info.tokens.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)); // 按码点排序，各机器结果一致
   const inChannel = (c) => list.filter(([, t]) => ext(t).channels.includes(c));
   const exported = list.filter(([, t]) => ext(t).channels.length);
 
@@ -68,8 +77,10 @@ export function renderBrand(root, brand) {
     const value = isRef(t.$value)
       ? `var(--${brand}-${cssName(t.$value.slice(1, -1))})`
       : cssValue(t.$type, info.resolved.get(name), ext(t).angle);
-    const dep = t.$deprecated ? `（已弃用：${safeComment(t.$deprecated === true ? '是' : t.$deprecated)}）` : '';
-    css.push(`  /* ${safeComment(t.$description)}${dep} */`);
+    const e = ext(t);
+    const dep = t.$deprecated ? `；已弃用：${safeComment(t.$deprecated === true ? '是' : t.$deprecated)}` : '';
+    const pend = e.pendingReason ? `；待处理：${safeComment(e.pendingReason)}` : '';
+    css.push(`  /* ${safeComment(t.$description)}（状态：${e.status}；渠道：${e.channels.join('、')}${pend}${dep}） */`);
     css.push(`  --${brand}-${cssName(name)}: ${value};`);
   }
   css.push('}', '');
@@ -83,7 +94,7 @@ export function renderBrand(root, brand) {
     if (v === null) continue;
     dart.push('');
     for (const l of docLines(t)) dart.push(`  /// ${l}`);
-    if (t.$deprecated) dart.push(`  @Deprecated(${JSON.stringify(typeof t.$deprecated === 'string' ? t.$deprecated : '已弃用')})`);
+    if (t.$deprecated) dart.push(`  @Deprecated(${dartString(typeof t.$deprecated === 'string' ? t.$deprecated : '已弃用')})`);
     dart.push(`  static const ${dartName(name)} = ${v};`);
   }
   dart.push('}', '');
@@ -135,7 +146,7 @@ export function renderBrandMd(root, brand) {
   const p = join(root, brand, 'brand.md');
   const original = readFileSync(p, 'utf8');
   const crlf = original.includes('\r\n');
-  const md = original.replace(/^﻿/, '').replace(/\r\n/g, '\n');
+  const md = original.replace(BOM_RE, '').replace(/\r\n/g, '\n');
   const block = findContrastBlock(md);
   if (!block) return original;
   const { info } = loadTokens(root, brand);
@@ -147,21 +158,33 @@ export function renderBrandMd(root, brand) {
   return crlf ? next.replace(/\n/g, '\r\n') : next;
 }
 
-/** 先把所有品牌渲染到内存，全部成功后才替换 build/ 和 brand.md；任何一步失败都不动磁盘。 */
+/**
+ * 先把所有品牌渲染到内存；全部成功后，把 build/ 和要改的 brand.md 都先写进临时文件，最后逐个改名替换。
+ * 生成阶段出错时磁盘完全不动；改名阶段出错（比如文件被占用）可能只替换了一部分，修好后重新运行 build 即可。
+ */
 export function buildRepo(root, brands) {
   const outputs = brands.map((brand) => ({ brand, files: renderBrand(root, brand), md: renderBrandMd(root, brand) }));
   const out = join(root, 'build');
   const tmp = join(root, `.build-tmp-${process.pid}`);
   rmSync(tmp, { recursive: true, force: true });
   mkdirSync(tmp, { recursive: true });
-  for (const { brand, files } of outputs) {
-    mkdirSync(join(tmp, brand), { recursive: true });
-    for (const [f, content] of files) writeFileSync(join(tmp, brand, f), content);
+  const mdSwaps = [];
+  try {
+    for (const { brand, files, md } of outputs) {
+      mkdirSync(join(tmp, brand), { recursive: true });
+      for (const [f, content] of files) writeFileSync(join(tmp, brand, f), content);
+      const p = join(root, brand, 'brand.md');
+      if (md !== readFileSync(p, 'utf8')) {
+        writeFileSync(`${p}.brand-kit-tmp`, md);
+        mdSwaps.push(p);
+      }
+    }
+  } catch (e) {
+    rmSync(tmp, { recursive: true, force: true });
+    for (const p of mdSwaps) rmSync(`${p}.brand-kit-tmp`, { force: true });
+    throw e;
   }
   rmSync(out, { recursive: true, force: true });
   renameSync(tmp, out);
-  for (const { brand, md } of outputs) {
-    const p = join(root, brand, 'brand.md');
-    if (md !== readFileSync(p, 'utf8')) writeFileSync(p, md);
-  }
+  for (const p of mdSwaps) renameSync(`${p}.brand-kit-tmp`, p);
 }

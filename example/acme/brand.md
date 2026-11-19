@@ -162,12 +162,13 @@ extra dials, wrong dial position, garbled text, fake logo, watermark
 | 事项 | 影响 | 找谁 |
 |---|---|---|
 | 包装中文字体 `font.packaging-cn` 的文件格式 | 包装稿不能定稿 | 示例：包装供应商 |
+| 主色 `color.brand.primary` 的 Pantone 色号（CMYK 已打样确认） | 专色印刷不能下单 | 示例：印刷厂打样 |
 
 ### 10.2 按现状执行
 
 | 事项 | 现在怎么执行 | 以后可以考虑 |
 |---|---|---|
-| 营销卡片圆角 | 营销 16px，网站和 App 12px | 统一为一个值 |
+| 营销卡片圆角 | 营销用 `radius.card-marketing`，网站和 App 用 `radius.card` | 统一为一个值 |
 | 图标规格 | 2px 描边线性图标 | 美术出正式图标规范 |
 
 ## 素材来源

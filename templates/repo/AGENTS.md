@@ -1,6 +1,6 @@
 # 给 AI 的说明
 
-这是一个品牌视觉标准库，用 [brand-kit](https://github.com/DAYOU-INC/brand-kit) 管理。品牌列表在 `brand-kit.json`，每个品牌一个目录。方法论和完整规则在 brand-kit 的文档里：品牌库里 `npm ci` 之后在 `node_modules/brand-kit/docs/`；没装依赖时直接看 GitHub 上对应版本的文档：`https://github.com/DAYOU-INC/brand-kit/tree/v0.2.0/docs`。
+这是一个品牌视觉标准库，用 [brand-kit](https://github.com/DAYOU-INC/brand-kit) 管理。品牌列表在 `brand-kit.json`，每个品牌一个目录。方法论和完整规则在 brand-kit 的文档里：品牌库里 `npm ci` 之后在 `node_modules/brand-kit/docs/`；没装依赖时直接看 GitHub 上对应版本的文档：`https://github.com/DAYOU-INC/brand-kit/tree/v0.3.0/docs`。
 
 ## 0. 先判断你的角色
 
@@ -13,7 +13,7 @@
 
 ## 1. 使用者：怎么读
 
-1. 先拉最新版：`git pull`。
+1. 先拉最新版：`git switch main && git pull --ff-only`。不在 main 上、或者有没提交的改动，先停下问人。
 2. 读 `<品牌>/brand.md` 第 1 节（品牌和正式名称）、第 10 节（待处理和按现状执行），再按**第 9 节的任务表**读和任务相关的章节。
 3. 数值只用 `build/<品牌>/` 里生成的文件：
    - `variables.css`：网站（只含渠道 web 的令牌）
@@ -43,7 +43,7 @@
 ## 4. 使用者：交付前检查
 
 - [ ] 颜色、字体、圆角都来自 `build/<品牌>/`，令牌的渠道包含当前场景。
-- [ ] 文字和底色的组合在 `brand.md` 第 3.2 节的对比度表里，且符合表里的规则；表里没有的组合先算对比度（WCAG 2.x AA：正文 ≥ 4.5，大字和图形 ≥ 3）。
+- [ ] 文字和底色的组合在 `brand.md` 第 3.2 节的对比度表里，且符合表里的规则；表里没有的组合先算对比度（`npx brand-kit contrast "#前景" "#底色"`；WCAG 2.x AA：正文 ≥ 4.5，大字和图形 ≥ 3）。
 - [ ] logo 是原文件，没有变形、改色、加效果，留足安全距离。
 - [ ] 产品名称是 `brand.md` 第 1.1 节的正式名称；功能描述没有超出第 8 节指向的产品说明。
 - [ ] 没有用到 `brand.md` 第 2.3、6.5 节禁止的做法。

@@ -16,7 +16,7 @@ test('所有指向 brand-kit 标签的地方都是当前版本', () => {
   const wrong = [];
   for (const f of [join(KIT, 'README.md'), ...files('docs'), ...files('templates'), ...files('example'), ...files('schemas')]) {
     const s = readFileSync(f, 'utf8');
-    for (const m of s.matchAll(/brand-kit(?:\/archive\/refs\/tags\/|#|\/)(v\d+\.\d+\.\d+)/g)) if (m[1] !== tag) wrong.push(`${f}: ${m[0]}`);
+    for (const m of s.matchAll(/brand-kit(?:\/archive\/refs\/tags\/|\/tree\/|\/blob\/|#|\/)(v\d+\.\d+\.\d+)/g)) if (m[1] !== tag) wrong.push(`${f}: ${m[0]}`);
   }
   assert.deepEqual(wrong, [], `当前版本是 ${tag}`);
 });

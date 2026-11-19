@@ -108,6 +108,32 @@ test('build 失败时不动磁盘：build/ 和 brand.md 保持原样', () => {
   cleanup(dir);
 });
 
+test('常见写法不误报：渠道名、Mastodon、尚未定稿、带属性的 HTML、话题标签、相近的名字', () => expectClean((d) => editText(d, 'acme/brand.md', (md) => md.replace('## 素材来源', '渠道写 `device`，状态写 `current`。关注 Mastodon。文案尚未定稿。<img alt="产品正面图" src="x.png"> 话题 #cafe。Acme Millennium 是另一家公司。\n\n## 素材来源'))));
+
+test('漏写一个字段只报中文的那条，不报 Schema 噪声', async () => {
+  const dir = copyExample();
+  editJson(dir, 'acme/tokens.json', (j) => { delete token(j, 'color.brand.cream').$extensions[NS].status; });
+  const { errors } = await checkRepo(dir);
+  assert.ok(errors.some((e) => e.includes('status 必填')));
+  assert.ok(!errors.some((e) => e.includes('结构不符合')), errors.join(' / '));
+  cleanup(dir);
+});
+
+test('Dart：小数尺寸不四舍五入，字符串里的 $ 和引号被转义', () => {
+  const dir = copyExample();
+  editJson(dir, 'acme/tokens.json', (j) => {
+    j.radius.tiny = { $value: { value: 0.25, unit: 'px' }, $description: '细线', $extensions: { [NS]: { status: 'current', channels: ['app'], source: 'x' } } };
+    j.font.quirky = { $value: ["Brand$Sans'X"], $description: 'x', $extensions: { [NS]: { status: 'current', channels: ['app'], source: 'x' } } };
+  });
+  buildRepo(dir, ['acme']);
+  const dart = readFileSync(join(dir, 'build/acme/acme_tokens.dart'), 'utf8');
+  assert.match(dart, /radiusTiny = 0\.25;/);
+  const BS = String.fromCharCode(92);
+  const line = dart.split(/\r?\n/).find((l) => l.includes('fontQuirky'));
+  assert.equal(line.trim(), `static const fontQuirky = 'Brand${BS}$Sans${BS}'X';`);
+  cleanup(dir);
+});
+
 // ---------- 令牌 ----------
 const T = 'acme/tokens.json';
 const tokenCases = [
@@ -137,10 +163,15 @@ const tokenCases = [
   ['循环引用', (j) => { token(j, 'color.digital.web-primary').$value = '{color.digital.web-primary}'; }, '循环引用'],
   ['引用已弃用', (j) => { token(j, 'color.digital.web-primary').$value = '{color.legacy.orange}'; }, '已弃用'],
   ['引用的分组已弃用', (j) => { j.color.legacy.$deprecated = true; delete token(j, 'color.legacy.orange').$deprecated; token(j, 'color.digital.web-primary').$value = '{color.legacy.orange}'; }, '已弃用'],
-  ['web 别名引用了没导出到 web 的令牌', (j) => { token(j, 'color.digital.web-primary').$value = '{color.device.ready}'; }, '没有导出到 web'],
+  ['web 别名引用了没导出到 web 的令牌', (j) => { token(j, 'color.digital.web-primary').$value = '{color.device.ready}'; }, '没有导出到这些渠道'],
   ['confirmed 缺确认人', (j) => { delete token(j, 'color.brand.primary').$extensions[NS].confirmedBy; }, 'confirmedBy 必填'],
   ['确认人是 AI', (j) => { token(j, 'color.brand.primary').$extensions[NS].confirmedBy = 'AI 推断'; }, '必须是人'],
-  ['确认日期不存在', (j) => { token(j, 'color.brand.primary').$extensions[NS].confirmedAt = '2026-13-45'; }, '真实日期'],
+  ['确认日期不存在', (j) => { token(j, 'color.brand.primary').$extensions[NS].confirmedAt = '2026-13-45'; }, '真实存在'],
+  ['确认日期在未来', (j) => { token(j, 'color.brand.primary').$extensions[NS].confirmedAt = '2099-01-01'; }, '不晚于今天'],
+  ['确认人是占位符', (j) => { token(j, 'color.brand.primary').$extensions[NS].confirmedBy = '<确认人>'; }, '没填的占位符'],
+  ['print 写了没定的值', (j) => { token(j, 'color.brand.primary').$extensions[NS].print = { cmyk: '85 50 40 30', pantone: '待处理' }; }, 'print 只写'],
+  ['渐变色标引用了设备专用色', (j) => { token(j, 'gradient.warm').$value[1].color = '{color.device.ready}'; }, '没有导出到这些渠道'],
+  ['生成的 Dart 名是保留字', (j) => { j.default = { $type: 'number', $value: 1, $description: 'x', $extensions: { [NS]: { status: 'current', channels: ['app'], source: 'x' } } }; }, 'Dart 保留字'],
   ['confirmed 还留着 pendingReason', (j) => { token(j, 'color.brand.primary').$extensions[NS].pendingReason = 'x'; }, '不能再有 pendingReason'],
   ['pending 缺原因', (j) => { delete token(j, 'font.packaging-cn').$extensions[NS].pendingReason; }, 'pendingReason 必填'],
   ['渐变缺角度', (j) => { delete token(j, 'gradient.warm').$extensions[NS].angle; }, '必须在扩展里写 angle'],
@@ -174,7 +205,6 @@ const mdCases = [
   ['色值不是令牌', append('底色 #123456。'), '不是任何令牌的值'],
   ['色值旁边没写令牌名', append('底色 #F4EDE4。'), '旁边要写令牌全名'],
   ['代码块里的色值不是令牌', append('```\nbackground #123456\n```'), '不是任何令牌的值'],
-  ['3 位色值', append('底色 #fff 和 `color.neutral.white`。'), '6 位'],
   ['令牌简写（带点）', append('用 `brand.primary`。'), '要写全名'],
   ['令牌简写（单个词）', append('用 `accent-light`。'), '要写全名'],
   ['令牌名有大写', append('用 `color.Brand.primary`。'), '全小写'],
@@ -199,7 +229,11 @@ const mdCases = [
   ['缺对比度表', (d) => editText(d, M, (md) => md.replace(/<!-- brand-kit:contrast[\s\S]*?<!-- \/brand-kit:contrast -->/, '')), '对比度表'],
   ['变更记录确认格式', (d) => editText(d, M, (md) => md.replace('| 2026-11-19 | 初稿 | 未确认 |', '| 2026-11-19 | 初稿 | 用户 |')), '“确认”只能写'],
   ['变更记录确认人是 AI', (d) => editText(d, M, (md) => md.replace('| 2026-11-19 | 初稿 | 未确认 |', '| 2026-11-19 | 初稿 | AI，推断，2026-11-19 |')), '必须是人'],
-  ['变更记录日期不存在', (d) => editText(d, M, (md) => md.replace('| 2026-11-19 | 初稿 |', '| 2026-02-30 | 初稿 |')), '真实的 YYYY-MM-DD'],
+  ['变更记录日期不存在', (d) => editText(d, M, (md) => md.replace('| 2026-11-19 | 初稿 |', '| 2026-02-30 | 初稿 |')), '真实存在'],
+  ['变更记录日期在未来', (d) => editText(d, M, (md) => md.replace('| 2026-11-19 | 初稿 |', '| 2099-01-01 | 初稿 |')), '不晚于今天'],
+  ['对比度表不在 3.2 节', (d) => editText(d, M, (md) => { const m = md.match(/<!-- brand-kit:contrast[\s\S]*?<!-- \/brand-kit:contrast -->/)[0]; return md.replace(m, '').replace('## 8. 文案', ['## 8. 文案', '', m].join('\n')); }), '必须放在'],
+  ['HTML 注释里的标题不算章节', (d) => editText(d, M, (md) => md.replace('## 8. 文案', ['<!--', '## 8. 文案', '-->', '## 8. 文字'].join('\n'))), '缺少二级标题'],
+  ['文件不是 UTF-8', (d) => writeFileSync(join(d, M), Buffer.concat([readFileSync(join(d, M)), Buffer.from([0xff, 0xfe, 0x41])])), '不是 UTF-8'],
   ['变更记录缺分隔行', (d) => editText(d, M, (md) => md.replace(/(\| 日期 \| 变更 \| 确认 \|\r?\n)\|---\|---\|---\|\r?\n/, '$1')), '分隔行'],
   ['source-index 里的占位符', (d) => editText(d, 'acme/source-index.md', (s) => s + '\n<访问方式>\n'), '没填的占位符'],
 ];

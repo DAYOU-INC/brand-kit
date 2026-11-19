@@ -122,12 +122,17 @@ function checkValue(type, v, say) {
   }
 }
 
+/** 真实存在、且不晚于今天（按 UTC+14 留余量）的 YYYY-MM-DD。 */
 const realDate = (s) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(s ?? '')) return false;
   const d = new Date(`${s}T00:00:00Z`);
-  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+  if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== s) return false;
+  return d.getTime() <= Date.now() + 14 * 3600 * 1000;
 };
 export { realDate };
+
+/** Dart 的保留字，生成的常量名不能是这些。 */
+const DART_RESERVED = new Set(['abstract', 'as', 'assert', 'async', 'await', 'base', 'break', 'case', 'catch', 'class', 'const', 'continue', 'covariant', 'default', 'deferred', 'do', 'dynamic', 'else', 'enum', 'export', 'extends', 'extension', 'external', 'factory', 'false', 'final', 'finally', 'for', 'function', 'get', 'hide', 'if', 'implements', 'import', 'in', 'interface', 'is', 'late', 'library', 'mixin', 'new', 'null', 'of', 'on', 'operator', 'part', 'required', 'rethrow', 'return', 'sealed', 'set', 'show', 'static', 'super', 'switch', 'sync', 'this', 'throw', 'true', 'try', 'type', 'typedef', 'var', 'void', 'when', 'while', 'with', 'yield']);
 
 const EXT_KEYS = ['status', 'channels', 'source', 'confirmedBy', 'confirmedAt', 'pendingReason', 'angle', 'print'];
 
@@ -158,7 +163,7 @@ export function validateTokens(raw) {
       if (e.status === 'confirmed') {
         if (typeof e.confirmedBy !== 'string' || !e.confirmedBy.trim()) say('status 是 confirmed 时，confirmedBy 必填（确认人和渠道）');
         else if (NOT_HUMAN.test(e.confirmedBy)) say('confirmedBy 必须是人；AI 和推断不能算确认');
-        if (!realDate(e.confirmedAt)) say('status 是 confirmed 时，confirmedAt 必填，且要是真实日期 YYYY-MM-DD');
+        if (!realDate(e.confirmedAt)) say('status 是 confirmed 时，confirmedAt 必填，且要是真实存在、不晚于今天的日期 YYYY-MM-DD');
         if ('pendingReason' in e) say('status 是 confirmed 时不能再有 pendingReason');
       } else if ('confirmedBy' in e || 'confirmedAt' in e) say('只有 status 是 confirmed 时才写 confirmedBy / confirmedAt');
       if (e.status === 'pending' && (typeof e.pendingReason !== 'string' || !e.pendingReason.trim())) say('status 是 pending 时，pendingReason 必填（卡在什么问题上）');
@@ -183,14 +188,14 @@ export function validateTokens(raw) {
       if (target.$deprecated && !t.$deprecated) say(`引用了已弃用的令牌 {${r}}`);
       const expected = t.$type === 'gradient' ? 'color' : t.$type;
       if (target.$type && expected && target.$type !== expected) say(`引用的 {${r}} 类型是 ${target.$type}，这里需要 ${expected}`);
-      // 只有整值别名会在 CSS 里生成 var()，被引用的令牌也必须导出到 web
-      if (isRef(t.$value) && ext(t).channels?.includes('web') && !ext(target).channels?.includes('web')) {
-        say(`整值引用了 {${r}} 并导出到 web，但 {${r}} 没有导出到 web，生成的 CSS 会引用不存在的变量`);
-      }
+      // 引用会把被引用的颜色带进本令牌的渠道（别名、渐变色标都一样），所以被引用的令牌必须覆盖本令牌的渠道
+      const missing = (ext(t).channels ?? []).filter((c) => !(ext(target).channels ?? []).includes(c));
+      if (missing.length) say(`导出到 ${missing.join('、')}，但引用的 {${r}} 没有导出到这些渠道（被引用的令牌，渠道要覆盖引用它的令牌）`);
     }
   }
 
-  // 生成后的名字不能撞车
+  // 生成后的名字不能撞车，Dart 名不能是保留字
+  for (const name of tokens.keys()) if (DART_RESERVED.has(dartName(name))) errors.push({ token: name, msg: `生成的 Dart 常量名“${dartName(name)}”是 Dart 保留字，换个名字` });
   for (const [label, fn] of [['CSS 变量名', cssName], ['Dart 常量名', dartName]]) {
     const seen = new Map();
     for (const name of tokens.keys()) {

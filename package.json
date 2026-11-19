@@ -1,6 +1,6 @@
 {
   "name": "brand-kit",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AI 时代的品牌视觉规范方法论和工具：设计令牌、规范写法、自动校验和构建",
   "license": "MIT",
   "type": "module",
@@ -25,6 +25,6 @@
     "test": "node --test \"test/**/*.test.mjs\""
   },
   "dependencies": {
-    "ajv": "8.17.1"
+    "ajv": "8.20.0"
   }
 }

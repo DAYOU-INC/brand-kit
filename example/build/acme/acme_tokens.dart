@@ -1,4 +1,4 @@
-// acme 设计令牌：由 brand-kit 0.2.0 从 acme/tokens.json 生成，不要手改（acme_tokens.dart）
+// acme 设计令牌：由 brand-kit 0.3.0 从 acme/tokens.json 生成，不要手改（acme_tokens.dart）
 
 import 'package:flutter/painting.dart';
 
@@ -30,7 +30,7 @@ abstract final class AcmeTokens {
 
   /// 标题、按钮和营销物料正文（拉丁文字）。
   /// 状态：current；渠道：web、app、marketing；出处：示例：详情页 PSD 文字图层；Google Fonts，SIL OFL 1.1
-  static const fontDisplay = "Source Sans 3";
+  static const fontDisplay = 'Source Sans 3';
 
   /// 网站和 App 卡片圆角。
   /// 状态：current；渠道：web、app；出处：示例：网站样式表
