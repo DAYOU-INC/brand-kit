@@ -1,5 +1,5 @@
 {
-  "$description": "acme 设计令牌：由 brand-kit 0.3.4 从 acme/tokens.json 生成，不要手改（tokens.dtcg.json）",
+  "$description": "acme 设计令牌：由 brand-kit 0.3.5 从 acme/tokens.json 生成，不要手改（tokens.dtcg.json）",
   "color": {
     "brand": {
       "accent": {
@@ -175,7 +175,7 @@
               "web",
               "app"
             ],
-            "source": "示例：网站样式表"
+            "source": "示例：设计提供的网站设计稿（Figma 导出图）取色"
           }
         }
       }
@@ -225,7 +225,7 @@
           "channels": [
             "web"
           ],
-          "source": "示例：网站样式表"
+          "source": "示例：设计提供的网站设计稿（Figma 导出图）取色"
         }
       }
     },
@@ -324,7 +324,7 @@
             "web",
             "app"
           ],
-          "source": "示例：网站样式表"
+          "source": "示例：设计提供的网站设计稿（Figma 导出图）取色"
         }
       }
     },

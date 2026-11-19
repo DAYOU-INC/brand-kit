@@ -1,4 +1,4 @@
-// acme 设计令牌：由 brand-kit 0.3.4 从 acme/tokens.json 生成，不要手改（acme_tokens.dart）
+// acme 设计令牌：由 brand-kit 0.3.5 从 acme/tokens.json 生成，不要手改（acme_tokens.dart）
 
 import 'package:flutter/painting.dart';
 
@@ -21,7 +21,7 @@ abstract final class AcmeTokens {
   static const colorBrandPrimary = Color(0xFF1F4E5F);
 
   /// 网站主色，指向品牌主色。
-  /// 状态：current；渠道：web、app；出处：示例：网站样式表
+  /// 状态：current；渠道：web、app；出处：示例：设计提供的网站设计稿（Figma 导出图）取色
   static const colorDigitalWebPrimary = Color(0xFF1F4E5F);
 
   /// 白色。
@@ -33,6 +33,6 @@ abstract final class AcmeTokens {
   static const fontDisplay = 'Source Sans 3';
 
   /// 网站和 App 卡片圆角。
-  /// 状态：current；渠道：web、app；出处：示例：网站样式表
+  /// 状态：current；渠道：web、app；出处：示例：设计提供的网站设计稿（Figma 导出图）取色
   static const radiusCard = 12.0;
 }

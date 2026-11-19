@@ -272,3 +272,5 @@ test('模板品牌：允许占位符时通过；不允许时报占位符，模�
   assert.equal(t.color.brand.primary.$extensions[NS].status, 'pending', '模板里的假值必须是 pending');
   rmSync(base, { recursive: true, force: true });
 });
+
+test('比较式里的尖括号不算占位符', () => expectClean((d) => editJson(d, T, (j) => { token(j, 'color.brand.cream').$extensions[NS].source = '取色：饱和度 < 0.08、亮度 > 0.5 的像素中位数'; })));

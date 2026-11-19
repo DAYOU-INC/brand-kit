@@ -93,7 +93,7 @@ Acme 做家用电动磨豆机，给在家做手冲和意式的人用：稳定的
 
 ## 5. 图形和图标
 
-网站和 App 用线性图标：24px 网格、2px 描边、圆角端点、单色（按现状执行）。设备屏幕只用 `color.neutral.white` 和 `color.device.ready` 两种颜色。
+网站和 App 用线性图标：24px 网格、2px 描边、圆角端点、单色（示例网站设计稿的图标页，按现状执行）。设备屏幕只用 `color.neutral.white` 和 `color.device.ready` 两种颜色。
 
 ## 6. 图片和视频
 

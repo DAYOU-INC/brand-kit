@@ -9,6 +9,8 @@
 - **生成文件**（`build/`）：网站 CSS、Flutter 常量、带说明的完整 JSON、给设计工具导入的 DTCG 文件，由令牌自动生成
 - **自动校验**（`brand-kit check`）：每个合并请求都检查一遍，规范写错、数值对不上、对比度不达标、生成文件过期都会报错
 
+**规范的唯一依据是设计提供的素材库**：网站和 App 的代码、开发文档、产品说明都不作为依据；素材库里缺的，整理成清单反馈设计。
+
 AI 有明确的入口（`AGENTS.md`），分两种角色：维护品牌库的 AI，和在其他项目里使用规范的 AI。
 
 ## 先看什么
@@ -26,7 +28,7 @@ AI 有明确的入口（`AGENTS.md`），分两种角色：维护品牌库的 AI
 需要 Node.js 22 或更高版本。
 
 ```bash
-npx https://github.com/DAYOU-INC/brand-kit/archive/refs/tags/v0.3.4.tar.gz init my-brands
+npx https://github.com/DAYOU-INC/brand-kit/archive/refs/tags/v0.3.5.tar.gz init my-brands
 cd my-brands && git init -b main && npm install
 npx brand-kit new acme       # 新增品牌，按模板填写
 npx brand-kit build          # 由 tokens.json 生成 build/，更新对比度表

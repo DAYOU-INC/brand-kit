@@ -10,6 +10,7 @@ Acme 是虚构的示例品牌，下面的位置都是虚构的，只演示写法
 | `品牌素材/Acme/产品图/` | 30 | 渲染图、场景图 | 第 1、6.1、6.2 节，`color.brand.accent` |
 | `品牌素材/Acme/详情页/` | 12 | 详情页长图和 PSD | 第 3、4、6.3 节 |
 | `品牌素材/Acme/设备UI/` | 6 | 屏幕界面稿 | 第 5 节，`color.device.ready` |
+| `品牌素材/Acme/网站设计稿/` | 8 | 设计提供的网站设计稿（Figma 导出图），含图标页 | 第 3.3、5 节，`color.digital.web-primary`、`font.body`、`radius.card` |
 
 ## 没看到的素材
 

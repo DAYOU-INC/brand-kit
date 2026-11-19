@@ -1,6 +1,6 @@
 # 给 AI 的说明
 
-这是一个品牌视觉标准库，用 [brand-kit](https://github.com/DAYOU-INC/brand-kit) 管理。品牌列表在 `brand-kit.json`，每个品牌一个目录。方法论和完整规则在 brand-kit 的文档里：品牌库里 `npm ci` 之后在 `node_modules/brand-kit/docs/`；没装依赖时直接看 GitHub 上对应版本的文档：`https://github.com/DAYOU-INC/brand-kit/tree/v0.3.4/docs`。
+这是一个品牌视觉标准库，用 [brand-kit](https://github.com/DAYOU-INC/brand-kit) 管理。品牌列表在 `brand-kit.json`，每个品牌一个目录。方法论和完整规则在 brand-kit 的文档里：品牌库里 `npm ci` 之后在 `node_modules/brand-kit/docs/`；没装依赖时直接看 GitHub 上对应版本的文档：`https://github.com/DAYOU-INC/brand-kit/tree/v0.3.5/docs`。
 
 ## 0. 先判断你的角色
 
@@ -30,7 +30,9 @@
 | 「按现状执行」 | `current` | 现行规定，直接用；交付时列出用到了哪些（以后可能变） |
 | 「待处理」 | `pending` | 有问题没解决，不要自己决定；停下或用替代方案，交付时报告 |
 
-令牌带 `$deprecated` 的已经弃用，不要再用，按说明换成新令牌。
+令牌带 `$deprecated` 的已经弃用，不要再用，按说明换成新令牌。`channels` 为空的令牌只为记录，不能使用。
+
+**对比度表优先**：`brand.md` 第 3.2 节标“禁止用于文字”的组合，即使别的章节说现有物料在用、或者标了「按现状执行」，新物料也不用；替代方案没定时先问人。
 
 ## 3. 两种角色都不能做的
 

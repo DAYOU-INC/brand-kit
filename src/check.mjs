@@ -16,8 +16,8 @@ import { renderBrand, renderBrandMd } from './build.mjs';
 const FILE_EXT = /\.(md|json|png|jpe?g|webp|svg|pdf|mjs|js|css|dart|ai|psd|mp4|txt|html)$/i;
 /** 常见 HTML 标签（带不带属性都不算占位符）。 */
 const HTML_TAG = /^<\/?(a|abbr|b|br|code|del|details|div|em|hr|i|img|kbd|li|ol|p|picture|pre|small|source|span|strong|sub|summary|sup|table|tbody|td|th|thead|tr|u|ul|video)(\s[^<>]*)?\/?>$/i;
-/** 模板占位符：尖括号里有中文、省略号或 YYYY，且不是 HTML 标签、自动链接。 */
-const PLACEHOLDER_CANDIDATE = /<[^<>\n]*?(?:[一-鿿]|…|YYYY)[^<>\n]*>/g;
+/** 模板占位符：尖括号里有中文、省略号或 YYYY，紧跟 < 的不是空格（排除“小于 0.08、亮度 > 0.5”这类比较式），且不是 HTML 标签、自动链接。 */
+const PLACEHOLDER_CANDIDATE = /<(?=\S)[^<>\n]*?(?:[一-鿿]|…|YYYY)[^<>\n]*>/g;
 const findPlaceholder = (s) => (s.match(PLACEHOLDER_CANDIDATE) ?? []).find((m) => !HTML_TAG.test(m) && !/^<(https?:|mailto:)/.test(m));
 /** 色值：前面不是字母数字、& 或 #，正好 6 位十六进制，后面不跟字母数字（话题标签、HTML 实体不算）。 */
 const HEX6 = /(?<![\w&#])#[0-9A-Fa-f]{6}(?![\w])/g;

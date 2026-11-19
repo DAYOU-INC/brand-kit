@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.3.4/schemas/checks.schema.json",
+  "$id": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.3.5/schemas/checks.schema.json",
   "title": "brand-kit 品牌校验规则（checks.json）",
   "type": "object",
   "required": [

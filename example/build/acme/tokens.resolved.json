@@ -1,5 +1,5 @@
 {
-  "$description": "acme 设计令牌：由 brand-kit 0.3.4 从 acme/tokens.json 生成，不要手改（tokens.resolved.json）",
+  "$description": "acme 设计令牌：由 brand-kit 0.3.5 从 acme/tokens.json 生成，不要手改（tokens.resolved.json）",
   "tokens": {
     "color.brand.accent": {
       "type": "color",
@@ -95,7 +95,7 @@
       ],
       "status": "current",
       "description": "网站主色，指向品牌主色。",
-      "source": "示例：网站样式表"
+      "source": "示例：设计提供的网站设计稿（Figma 导出图）取色"
     },
     "color.neutral.white": {
       "type": "color",
@@ -120,7 +120,7 @@
       ],
       "status": "current",
       "description": "网页正文用系统字体栈。",
-      "source": "示例：网站样式表"
+      "source": "示例：设计提供的网站设计稿（Figma 导出图）取色"
     },
     "font.display": {
       "type": "fontFamily",
@@ -165,7 +165,7 @@
       ],
       "status": "current",
       "description": "网站和 App 卡片圆角。",
-      "source": "示例：网站样式表"
+      "source": "示例：设计提供的网站设计稿（Figma 导出图）取色"
     },
     "radius.card-marketing": {
       "type": "dimension",
