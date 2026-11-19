@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // brand-kit 命令行。用法见 README.md「命令」。
-import { cpSync, existsSync, writeFileSync, readdirSync, renameSync } from 'node:fs';
+import { existsSync, writeFileSync, readdirSync, renameSync } from 'node:fs';
+import { copyDir } from './fsutil.mjs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadRepoConfig, brandNameProblem } from './config.mjs';
@@ -46,7 +47,7 @@ async function main() {
       if (!arg) throw new Error('要写目录：brand-kit init <目录>');
       const dest = resolve(arg);
       if (existsSync(dest) && readdirSync(dest).length) throw new Error(`${dest} 不是空目录`);
-      cpSync(join(KIT, 'templates', 'repo'), dest, { recursive: true });
+      copyDir(join(KIT, 'templates', 'repo'), dest);
       // npm 发布时会忽略 .gitignore，模板里存成 gitignore，复制后改名
       if (existsSync(join(dest, 'gitignore'))) renameSync(join(dest, 'gitignore'), join(dest, '.gitignore'));
       console.log(`已创建品牌库 ${dest}。下一步：cd 进去，npm install，然后 brand-kit new <品牌名>`);
@@ -57,7 +58,7 @@ async function main() {
       if (why) throw new Error(`品牌名不合法：${why}`);
       const cfg = loadRepoConfig(root);
       if (cfg.brands.includes(arg) || existsSync(join(root, arg))) throw new Error(`${arg} 已经存在`);
-      cpSync(join(KIT, 'templates', 'brand'), join(root, arg), { recursive: true });
+      copyDir(join(KIT, 'templates', 'brand'), join(root, arg));
       cfg.brands.push(arg);
       writeFileSync(join(root, 'brand-kit.json'), JSON.stringify(cfg, null, 2) + '\n');
       console.log(`已新增 ${arg}/。按 docs/维护流程.md 填写，填完运行 brand-kit build 和 brand-kit check。`);

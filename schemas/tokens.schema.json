@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.3.0/schemas/tokens.schema.json",
+  "$id": "https://raw.githubusercontent.com/DAYOU-INC/brand-kit/v0.3.1/schemas/tokens.schema.json",
   "title": "brand-kit 设计令牌（DTCG 2025.10 子集 + brand-kit 扩展）",
   "description": "结构层面的校验，给编辑器提示用。引用解析、颜色分量和 hex 一致、渠道和引用的关系等由 brand-kit check 检查。",
   "$ref": "#/$defs/group",

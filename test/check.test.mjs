@@ -2,12 +2,13 @@
 // 示例库复制到带中文和空格的临时目录里跑，顺便验证路径处理。
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cpSync, mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, existsSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { checkRepo } from '../src/check.mjs';
 import { buildRepo } from '../src/build.mjs';
+import { copyDir } from '../src/fsutil.mjs';
 
 const KIT = fileURLToPath(new URL('..', import.meta.url));
 const EXAMPLE = join(KIT, 'example');
@@ -15,7 +16,7 @@ const NS = 'com.github.dayou-inc.brand-kit';
 
 function copyExample() {
   const dir = join(mkdtempSync(join(tmpdir(), 'brand-kit-')), '中文 目录');
-  cpSync(EXAMPLE, dir, { recursive: true, filter: (s) => !s.includes('node_modules') });
+  copyDir(EXAMPLE, dir, (s) => !s.includes('node_modules'));
   return dir;
 }
 const cleanup = (dir) => rmSync(join(dir, '..'), { recursive: true, force: true });
@@ -259,8 +260,8 @@ test('checks.json 不是合法 JSON', () => expectError((d) => writeFileSync(joi
 test('模板品牌：允许占位符时通过；不允许时报占位符，模板值标为待处理', async () => {
   const base = mkdtempSync(join(tmpdir(), 'brand-kit-'));
   const dir = join(base, '新 库');
-  cpSync(join(KIT, 'templates/repo'), dir, { recursive: true });
-  cpSync(join(KIT, 'templates/brand'), join(dir, 'demo'), { recursive: true });
+  copyDir(join(KIT, 'templates/repo'), dir);
+  copyDir(join(KIT, 'templates/brand'), join(dir, 'demo'));
   editJson(dir, 'brand-kit.json', (j) => { j.brands = ['demo']; });
   buildRepo(dir, ['demo']);
   assert.ok(existsSync(join(dir, 'build/demo/variables.css')));
