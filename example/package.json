@@ -7,6 +7,6 @@
     "build": "brand-kit build"
   },
   "devDependencies": {
-    "brand-kit": "https://github.com/DAYOU-INC/brand-kit/archive/refs/tags/v0.3.5.tar.gz"
+    "brand-kit": "https://github.com/DAYOU-INC/brand-kit/archive/refs/tags/v0.3.6.tar.gz"
   }
 }
