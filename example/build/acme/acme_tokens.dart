@@ -1,4 +1,4 @@
-// acme 设计令牌：由 brand-kit 0.3.5 从 acme/tokens.json 生成，不要手改（acme_tokens.dart）
+// acme 设计令牌：由 brand-kit 0.3.6 从 acme/tokens.json 生成，不要手改（acme_tokens.dart）
 
 import 'package:flutter/painting.dart';
 
